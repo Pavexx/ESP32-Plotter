@@ -1,7 +1,5 @@
-#include "ServidorWeb.h"
-#include <WiFi.h>
-#include <WebServer.h>
 #include "Configuracion.h"
+#include "ServidorWeb.h"
 
 void ServidorWeb::iniciar() {
     Serial.println("\nCreando Access Point...");
@@ -13,5 +11,9 @@ void ServidorWeb::iniciar() {
         return;
     }
     Serial.println("\n ACCESS POINT \nIP: ");
-    Serial.println(WiFi.softAPIP());
+    Serial.print(WiFi.softAPIP());
+}
+
+IPAddress ServidorWeb::IP() const {
+    return WiFi.softAPIP();
 }
