@@ -10,8 +10,68 @@ void ServidorWeb::iniciar() {
         Serial.println("ERROR creando Access Point");
         return;
     }
-    Serial.println("\n ACCESS POINT \nIP: ");
-    Serial.print(WiFi.softAPIP());
+    WiFi.softAPConfig(Configuracion::IPLocal, Configuracion::gatewayIP, Configuracion::subnetMask);
+    
+    Serial.print("-----------------\n  ACCESS POINT\n IP: ");
+    Serial.println(WiFi.softAPIP());
+    Serial.println("-----------------");
+
+
+    ServidorDNS.setTTL(3600);
+
+    ServidorDNS.start(53, "*", Configuracion::IPLocal);
+
+    // Main page
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("GET /");
+        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+    });
+
+    // Android captive portal - generates 204 response code
+    server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("Android captive portal check detected");
+        // Don't redirect here - return 200 to trigger the system to open browser
+        request->send(200, "text/plain", "");
+    });
+
+    // iPhone captive portal check
+    server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("iPhone captive portal check detected");
+        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+    });
+
+    // Windows captive portal check
+    server.on("/ncsi.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("Windows captive portal check detected");
+        request->send(200, "text/plain", "Microsoft NCSI");
+    });
+
+    server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("Windows redirect check");
+        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+    });
+
+    // Firefox captive portal check
+    server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("Firefox captive portal check detected");
+        request->send(200, "text/plain", "success");
+    });
+
+    // Catch all non-matching requests and serve the page
+    server.onNotFound([](AsyncWebServerRequest *request) {
+        Serial.print("Unmatched request: ");
+        Serial.println(request->url());
+        
+        // Serve the HTML page for any unmatched request
+        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+    });
+
+    server.begin();
+    Serial.println("Servidor web iniciado");
+}
+
+void ServidorWeb::actualizar() {
+    ServidorDNS.processNextRequest();
 }
 
 IPAddress ServidorWeb::IP() const {

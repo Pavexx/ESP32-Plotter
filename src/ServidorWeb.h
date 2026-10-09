@@ -2,7 +2,11 @@
 
 #include <WiFi.h>
 #include <Arduino.h>
-#include <WebServer.h>
+//#include <WebServer.h>
+#include <AsyncTCP.h>
+#include "ESPAsyncWebServer.h"
+#include "DNSServer.h"
+
 
 class ServidorWeb {
 public:
@@ -10,5 +14,6 @@ public:
     void actualizar();
     IPAddress IP() const;
 private:
-    WebServer server{80};
+    AsyncWebServer server{80};
+    DNSServer ServidorDNS;
 };
