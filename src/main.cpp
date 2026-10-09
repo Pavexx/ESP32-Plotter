@@ -5,7 +5,8 @@ ServidorWeb web;
 
 void setup() {
     Serial.begin(115200);
-    web.iniciar();
+    web.iniciarAP();
+    web.iniciarSV();
     Serial.println("Funcionó");
 }
 
