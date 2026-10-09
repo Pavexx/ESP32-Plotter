@@ -18,14 +18,16 @@ void ServidorWeb::iniciarAP() {
 }
 
 void ServidorWeb::iniciarSV() {
-    ServidorDNS.setTTL(3600);
+    LittleFS.begin();
 
+    ServidorDNS.setTTL(3600);
     ServidorDNS.start(53, "*", Config::IP);
 
     // Main page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("GET /");
-        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+        //request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+        request->send(LittleFS, "/index.html", "text/html");
     });
 
     // Android captive portal - generates 204 response code
@@ -38,7 +40,7 @@ void ServidorWeb::iniciarSV() {
     // iPhone captive portal check
     server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("iPhone captive portal check detected");
-        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+        request->send(LittleFS, "/index.html", "text/html");
     });
 
     // Windows captive portal check
@@ -49,7 +51,7 @@ void ServidorWeb::iniciarSV() {
 
     server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("Windows redirect check");
-        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+        request->send(LittleFS, "/index.html", "text/html");
     });
 
     // Firefox captive portal check
@@ -64,7 +66,7 @@ void ServidorWeb::iniciarSV() {
         Serial.println(request->url());
         
         // Serve the HTML page for any unmatched request
-        request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
+        request->send(LittleFS, "/index.html", "text/html");
     });
 
     server.begin();
