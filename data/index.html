@@ -1,19 +1,18 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<script src="script.js"></script>
+<link rel="stylesheet" href="style.css">
     <title>Imagen → LVGL RGB565</title>
 </head>
 
 <body>
-
+<div class="Titulo">
 <h1>Conversor de imágenes para LVGL</h1>
-
-<hr>
-
+</div>
+<div class="Seimagen">
 <h2>1. Seleccionar imagen</h2>
 
 <input
@@ -21,15 +20,13 @@
     id="fileInput"
     accept="image/*"
 >
-
-<br><br>
-
-<div>
-    <strong>Imagen original:</strong>
-    <span id="infoOriginal">Ninguna imagen seleccionada</span>
 </div>
 
-<br>
+
+<div class="ajustes">
+    <strong>Imagen original:</strong>
+    <span id="infoOriginal">Ninguna imagen seleccionada</span>
+
 
 <h2>2. Opciones</h2>
 
@@ -43,7 +40,6 @@
     <option value="stretch">Estirar a 128x160</option>
 </select>
 
-<br><br>
 
 <label>
     Rotación:
@@ -56,7 +52,6 @@
     <option value="270">270°</option>
 </select>
 
-<br><br>
 
 <label>
     Posición horizontal:
@@ -72,7 +67,6 @@
 
 <span id="posXValue">0</span>
 
-<br><br>
 
 <label>
     Posición vertical:
@@ -88,7 +82,6 @@
 
 <span id="posYValue">0</span>
 
-<br><br>
 
 <button id="autoVertical">
     Girar automáticamente a vertical
@@ -97,9 +90,8 @@
 <button id="reset">
     Restablecer
 </button>
-
-<hr>
-
+</div>
+<div class="foto">
 <h2>3. Vista previa</h2>
 
 <p>
@@ -114,36 +106,29 @@
     style="image-rendering: pixelated; border: 1px solid black;"
 ></canvas>
 
-<br><br>
 
 <button id="actualizar">
     Actualizar vista previa
 </button>
 
-<hr>
 
 <h2>4. Información</h2>
 
-<div id="infoFinal">
     Todavía no se ha procesado ninguna imagen.
-</div>
 
-<br>
 
-<div>
     Tamaño RGB565:
     <strong id="tamano">0 bytes</strong>
 </div>
 
-<hr>
 
+<div class="descargar">
 <h2>5. Descargar</h2>
 
 <button id="descargar">
     Descargar imagen_lvgl.c
 </button>
 
-<br><br>
 
 <button id="descargarBinario">
     Descargar datos RGB565 (.bin)
@@ -154,768 +139,9 @@
 </button>
 
 <p id="estadoESP32"></p>
+</div>
 
-<script>
-
-"use strict";
-
-// ============================================================
-// CONFIGURACIÓN
-// ============================================================
-
-const WIDTH = 128;
-const HEIGHT = 160;
-
-// ============================================================
-// ELEMENTOS HTML
-// ============================================================
-
-const fileInput = document.getElementById("fileInput");
-
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-const modo = document.getElementById("modo");
-const rotacion = document.getElementById("rotacion");
-
-const posX = document.getElementById("posX");
-const posY = document.getElementById("posY");
-
-const posXValue = document.getElementById("posXValue");
-const posYValue = document.getElementById("posYValue");
-
-const infoOriginal = document.getElementById("infoOriginal");
-const infoFinal = document.getElementById("infoFinal");
-const tamano = document.getElementById("tamano");
-
-const actualizar = document.getElementById("actualizar");
-const descargar = document.getElementById("descargar");
-const descargarBinario = document.getElementById("descargarBinario");
-
-const autoVertical = document.getElementById("autoVertical");
-const reset = document.getElementById("reset");
-
-// ============================================================
-// VARIABLES
-// ============================================================
-
-let imagen = null;
-let nombreOriginal = "imagen";
-
-let datosRGB565 = null;
-let contenidoC = "";
-
-
-// ============================================================
-// CARGAR IMAGEN
-// ============================================================
-
-fileInput.addEventListener("change", function () {
-
-    const file = this.files[0];
-
-    if (!file) {
-        return;
-    }
-
-    nombreOriginal = file.name
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[^a-zA-Z0-9_]/g, "_");
-
-    const url = URL.createObjectURL(file);
-
-    const img = new Image();
-
-    img.onload = function () {
-
-        imagen = img;
-
-        infoOriginal.textContent =
-            img.width +
-            " × " +
-            img.height +
-            " píxeles";
-
-        // Si es horizontal, sugerir rotación vertical
-        if (img.width > img.height) {
-            rotacion.value = "90";
-        } else {
-            rotacion.value = "0";
-        }
-
-        actualizarImagen();
-
-        URL.revokeObjectURL(url);
-    };
-
-    img.onerror = function () {
-        alert("No se pudo cargar la imagen.");
-    };
-
-    img.src = url;
-});
-
-
-// ============================================================
-// ACTUALIZAR VISTA
-// ============================================================
-
-function actualizarImagen() {
-
-    if (!imagen) {
-        return;
-    }
-
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-    // Fondo negro
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    const grados = parseInt(rotacion.value);
-
-    const radianes = grados * Math.PI / 180;
-
-    const modoActual = modo.value;
-
-    // --------------------------------------------------------
-    // Calcular dimensiones después de rotar
-    // --------------------------------------------------------
-
-    let srcW = imagen.width;
-    let srcH = imagen.height;
-
-    if (grados === 90 || grados === 270) {
-        srcW = imagen.height;
-        srcH = imagen.width;
-    }
-
-    // --------------------------------------------------------
-    // STRETCH
-    // --------------------------------------------------------
-
-    if (modoActual === "stretch") {
-
-        ctx.save();
-
-        ctx.translate(WIDTH / 2, HEIGHT / 2);
-        ctx.rotate(radianes);
-
-        ctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2,
-            imagen.width,
-            imagen.height
-        );
-
-        ctx.restore();
-
-        // En stretch realmente queremos ocupar todo el canvas.
-        // Volvemos a dibujar usando un canvas temporal.
-
-        const temporal = document.createElement("canvas");
-
-        temporal.width = srcW;
-        temporal.height = srcH;
-
-        const tctx = temporal.getContext("2d");
-
-        tctx.save();
-
-        tctx.translate(srcW / 2, srcH / 2);
-        tctx.rotate(radianes);
-
-        tctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2
-        );
-
-        tctx.restore();
-
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-        ctx.drawImage(
-            temporal,
-            0,
-            0,
-            srcW,
-            srcH,
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-    }
-
-    // --------------------------------------------------------
-    // CONTAIN / CROP
-    // --------------------------------------------------------
-
-    else {
-
-        const escalaX = WIDTH / srcW;
-        const escalaY = HEIGHT / srcH;
-
-        let escala;
-
-        if (modoActual === "crop") {
-            escala = Math.max(escalaX, escalaY);
-        } else {
-            escala = Math.min(escalaX, escalaY);
-        }
-
-        const dstW = srcW * escala;
-        const dstH = srcH * escala;
-
-        const desplazamientoX =
-            (WIDTH - dstW) / 2 +
-            parseInt(posX.value);
-
-        const desplazamientoY =
-            (HEIGHT - dstH) / 2 +
-            parseInt(posY.value);
-
-        // Canvas temporal para realizar la rotación
-        const temporal = document.createElement("canvas");
-
-        temporal.width = srcW;
-        temporal.height = srcH;
-
-        const tctx = temporal.getContext("2d");
-
-        tctx.save();
-
-        tctx.translate(srcW / 2, srcH / 2);
-        tctx.rotate(radianes);
-
-        tctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2
-        );
-
-        tctx.restore();
-
-        ctx.drawImage(
-            temporal,
-            0,
-            0,
-            srcW,
-            srcH,
-            desplazamientoX,
-            desplazamientoY,
-            dstW,
-            dstH
-        );
-    }
-
-    // --------------------------------------------------------
-    // Generar RGB565
-    // --------------------------------------------------------
-
-    generarRGB565();
-
-    // --------------------------------------------------------
-    // Información
-    // --------------------------------------------------------
-
-    infoFinal.innerHTML =
-        "Imagen convertida a <strong>" +
-        WIDTH +
-        " × " +
-        HEIGHT +
-        "</strong> píxeles.<br>" +
-        "Formato: <strong>RGB565</strong><br>" +
-        "Bytes: <strong>" +
-        datosRGB565.length +
-        "</strong>";
-
-    tamano.textContent =
-        datosRGB565.length + " bytes";
-}
-
-
-// ============================================================
-// RGB888 -> RGB565
-// ============================================================
-
-function convertirRGB565(r, g, b) {
-
-    return (
-        ((r & 0xF8) << 8) |
-        ((g & 0xFC) << 3) |
-        (b >> 3)
-    );
-}
-
-
-// ============================================================
-// GENERAR DATOS RGB565
-// ============================================================
-
-function generarRGB565() {
-
-    const imageData =
-        ctx.getImageData(
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-    const pixels = imageData.data;
-
-    datosRGB565 =
-        new Uint8Array(
-            WIDTH * HEIGHT * 2
-        );
-
-    let offset = 0;
-
-    for (let i = 0; i < pixels.length; i += 4) {
-
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-
-        const color =
-            convertirRGB565(r, g, b);
-
-        // ----------------------------------------------------
-        // IMPORTANTE:
-        //
-        // Little endian.
-        //
-        // Esto coincide con el true que usamos en:
-        //
-        // tft.pushColors(..., true);
-        // ----------------------------------------------------
-
-        datosRGB565[offset++] =
-            color & 0xFF;
-
-        datosRGB565[offset++] =
-            (color >> 8) & 0xFF;
-    }
-
-    generarC();
-}
-
-
-// ============================================================
-// GENERAR ARCHIVO .C
-// ============================================================
-
-function generarC() {
-
-    if (!datosRGB565) {
-        return;
-    }
-
-    let texto = "";
-
-    texto +=
-        "#include <stdint.h>\n";
-
-    texto +=
-        "#include <lvgl.h>\n\n";
-
-    texto +=
-        "// =====================================================\n";
-
-    texto +=
-        "// Imagen LVGL\n";
-
-    texto +=
-        "// Resolucion: 128 x 160\n";
-
-    texto +=
-        "// Formato: RGB565\n";
-
-    texto +=
-        "// =====================================================\n\n";
-
-    texto +=
-        "const uint8_t imagen_data[] = {\n";
-
-    for (let i = 0; i < datosRGB565.length; i++) {
-
-        if (i % 16 === 0) {
-            texto += "    ";
-        }
-
-        texto +=
-            "0x" +
-            datosRGB565[i]
-                .toString(16)
-                .padStart(2, "0")
-                .toUpperCase();
-
-        if (i < datosRGB565.length - 1) {
-            texto += ", ";
-        }
-
-        if (i % 16 === 15) {
-            texto += "\n";
-        }
-    }
-
-    if (datosRGB565.length % 16 !== 0) {
-        texto += "\n";
-    }
-
-    texto +=
-        "};\n\n";
-
-    texto +=
-        "// Descriptor LVGL\n";
-
-    texto +=
-        "const lv_image_dsc_t imagen = {\n";
-
-    texto +=
-        "    .header.magic = LV_IMAGE_HEADER_MAGIC,\n";
-
-    texto +=
-        "    .header.cf = LV_COLOR_FORMAT_RGB565,\n";
-
-    texto +=
-        "    .header.w = 128,\n";
-
-    texto +=
-        "    .header.h = 160,\n";
-
-    texto +=
-        "    .data_size = sizeof(imagen_data),\n";
-
-    texto +=
-        "    .data = imagen_data\n";
-
-    texto +=
-        "};\n";
-
-    contenidoC = texto;
-}
-
-
-// ============================================================
-// DESCARGAR .C
-// ============================================================
-
-descargar.addEventListener("click", function () {
-
-    if (!datosRGB565) {
-        alert("Primero selecciona una imagen.");
-        return;
-    }
-
-    const blob =
-        new Blob(
-            [contenidoC],
-            {
-                type: "text/plain;charset=utf-8"
-            }
-        );
-
-    const url =
-        URL.createObjectURL(blob);
-
-    const a =
-        document.createElement("a");
-
-    a.href = url;
-
-    a.download =
-        "imagen_lvgl.c";
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
-
-    URL.revokeObjectURL(url);
-});
-enviarESP32.addEventListener(
-    "click",
-    async function () {
-
-        if (!datosRGB565) {
-            alert(
-                "Primero selecciona una imagen."
-            );
-
-            return;
-        }
-
-
-        estadoESP32.textContent =
-            "Enviando imagen...";
-
-
-        try {
-
-            const formData =
-                new FormData();
-
-
-            const blob =
-                new Blob(
-                    [datosRGB565],
-                    {
-                        type:
-                            "application/octet-stream"
-                    }
-                );
-
-
-            formData.append(
-                "imagen",
-                blob,
-                "imagen.rgb565"
-            );
-
-
-            const respuesta =
-                await fetch(
-                    "/upload",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-
-            if (!respuesta.ok) {
-                throw new Error(
-                    "HTTP " +
-                    respuesta.status
-                );
-            }
-
-
-            estadoESP32.textContent =
-                "✓ Imagen mostrada en el ESP32";
-
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            estadoESP32.textContent =
-                "✗ Error enviando imagen";
-        }
-    }
-);
-
-
-// ============================================================
-// DESCARGAR BINARIO
-// ============================================================
-
-descargarBinario.addEventListener(
-    "click",
-    function () {
-
-        if (!datosRGB565) {
-            alert("Primero selecciona una imagen.");
-            return;
-        }
-
-        const blob =
-            new Blob(
-                [datosRGB565],
-                {
-                    type: "application/octet-stream"
-                }
-            );
-
-        const url =
-            URL.createObjectURL(blob);
-
-        const a =
-            document.createElement("a");
-
-        a.href = url;
-
-        a.download =
-            "imagen_rgb565.bin";
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        document.body.removeChild(a);
-
-        URL.revokeObjectURL(url);
-    }
-);
-
-
-// ============================================================
-// BOTÓN ACTUALIZAR
-// ============================================================
-
-actualizar.addEventListener(
-    "click",
-    function () {
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// CAMBIOS AUTOMÁTICOS
-// ============================================================
-
-modo.addEventListener(
-    "change",
-    actualizarImagen
-);
-
-rotacion.addEventListener(
-    "change",
-    actualizarImagen
-);
-
-posX.addEventListener(
-    "input",
-    function () {
-
-        posXValue.textContent =
-            posX.value;
-
-        actualizarImagen();
-    }
-);
-
-posY.addEventListener(
-    "input",
-    function () {
-
-        posYValue.textContent =
-            posY.value;
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// ROTACIÓN AUTOMÁTICA
-// ============================================================
-
-autoVertical.addEventListener(
-    "click",
-    function () {
-
-        if (!imagen) {
-            alert("Primero selecciona una imagen.");
-            return;
-        }
-
-        if (imagen.width > imagen.height) {
-            rotacion.value = "90";
-        } else {
-            rotacion.value = "0";
-        }
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// RESTABLECER
-// ============================================================
-
-reset.addEventListener(
-    "click",
-    function () {
-
-        modo.value = "crop";
-
-        rotacion.value = "0";
-
-        posX.value = "0";
-        posY.value = "0";
-
-        posXValue.textContent = "0";
-        posYValue.textContent = "0";
-
-        actualizarImagen();
-    }
-);
-
-</script>
 
 </body>
 </html>
-```
 
-### Cómo usarlo
-
-1. Guardá el código como:
-
-```text
-index.html
-```
-
-2. Abrilo desde el navegador. **No necesita servidor para hacer la conversión**, ya que todo el procesamiento se realiza en JavaScript en el navegador.
-
-3. Seleccioná una imagen.
-
-4. Elegí el modo:
-
-| Modo                     | Resultado                                                         |
-| ------------------------ | ----------------------------------------------------------------- |
-| **Recortar para llenar** | Mantiene proporción y llena los 128×160, recortando los sobrantes |
-| **Mantener proporción**  | Mantiene toda la imagen, pudiendo dejar zonas negras              |
-| **Estirar a 128×160**    | Fuerza exactamente 128×160 aunque deforme la imagen               |
-
-5. Ajustá la rotación y posición si hace falta.
-
-6. Descargá:
-
-```text
-imagen_lvgl.c
-```
-
-Ese archivo contiene:
-
-```c
-const uint8_t imagen_data[] = {
-    ...
-};
-
-const lv_image_dsc_t imagen = {
-    ...
-};
-```
-
-y en tu `main.cpp` podés seguir usando:
-
-```cpp
-lv_obj_t *img = lv_image_create(lv_screen_active());
-
-lv_image_set_src(img, &imagen);
-
-lv_obj_center(img);
-```
-
-### Un detalle importante para tu ST7735
-
-La imagen ocupa:
-
-**128 × 160 × 2 = 40.960 bytes**
-
-porque RGB565 utiliza 16 bits por píxel.
-
-Así que `imagen_lvgl.c` tendrá aproximadamente **41 KB** de datos. Para un ESP32 es perfectamente manejable, pero conviene que la imagen esté almacenada en **flash** y no se copie innecesariamente a RAM.
-
-Además, si vas a cargar varias imágenes, te recomiendo modificar el descriptor para colocar los datos en flash (`PROGMEM`) y organizar las imágenes como recursos LVGL.
