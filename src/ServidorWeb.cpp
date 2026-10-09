@@ -1,25 +1,26 @@
 #include "Configuracion.h"
 #include "ServidorWeb.h"
 
-void ServidorWeb::iniciar() {
+void ServidorWeb::iniciarAP() {
     Serial.println("\nCreando Access Point...");
     WiFi.mode(WIFI_AP);
-    bool result = WiFi.softAP(Configuracion::WIFI_SSID, Configuracion::WIFI_PASSWORD);
+    bool result = WiFi.softAP(Config::WIFI_SSID, Config::WIFI_PASSWORD);
     
     if (!result) {
         Serial.println("ERROR creando Access Point");
         return;
     }
-    WiFi.softAPConfig(Configuracion::IPLocal, Configuracion::gatewayIP, Configuracion::subnetMask);
+    WiFi.softAPConfig(Config::IP, Config::gatewayIP, Config::subnetMask);
     
     Serial.print("-----------------\n  ACCESS POINT\n IP: ");
     Serial.println(WiFi.softAPIP());
     Serial.println("-----------------");
+}
 
-
+void ServidorWeb::iniciarSV() {
     ServidorDNS.setTTL(3600);
 
-    ServidorDNS.start(53, "*", Configuracion::IPLocal);
+    ServidorDNS.start(53, "*", Config::IP);
 
     // Main page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -72,8 +73,4 @@ void ServidorWeb::iniciar() {
 
 void ServidorWeb::actualizar() {
     ServidorDNS.processNextRequest();
-}
-
-IPAddress ServidorWeb::IP() const {
-    return WiFi.softAPIP();
 }

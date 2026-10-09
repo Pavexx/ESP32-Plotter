@@ -10,7 +10,8 @@
 
 class ServidorWeb {
 public:
-    void iniciar();
+    void iniciarAP();
+    void iniciarSV();
     void actualizar();
     IPAddress IP() const;
 private:
