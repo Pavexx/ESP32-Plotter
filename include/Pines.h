@@ -3,9 +3,9 @@
 #include <Arduino.h>
 
 // TFT NO SON LOS QUE USAMOS
-constexpr uint8_t TFT_CS  = 5;
-constexpr uint8_t TFT_DC  = 16;
-constexpr uint8_t TFT_RST = 17;
+constexpr uint8_t TFT_CS  = 4;
+constexpr uint8_t TFT_RST = 16;
+constexpr uint8_t TFT_DC  = 17;
 
 /*
 // Stepper 1
