@@ -11,8 +11,9 @@
 
 class ServidorWeb {
 public:
-    void iniciarAP();
-    void iniciarSV();
+    void iniciar();
+    void crearAP();
+    void crearServidorDNS();
     void actualizar();
     IPAddress IP() const;
 private:

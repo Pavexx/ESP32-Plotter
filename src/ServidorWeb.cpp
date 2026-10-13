@@ -1,7 +1,12 @@
 #include "Configuracion.h"
 #include "ServidorWeb.h"
 
-void ServidorWeb::iniciarAP() {
+void ServidorWeb::iniciar(){
+    crearAP();
+    crearServidorDNS();
+}
+
+void ServidorWeb::crearAP() {
     Serial.println("\nCreando Access Point...");
     WiFi.mode(WIFI_AP);
     bool result = WiFi.softAP(Config::WIFI_SSID, Config::WIFI_PASSWORD);
@@ -17,7 +22,7 @@ void ServidorWeb::iniciarAP() {
     Serial.println("-----------------");
 }
 
-void ServidorWeb::iniciarSV() {
+void ServidorWeb::crearServidorDNS() {
     LittleFS.begin();
 
     ServidorDNS.setTTL(3600);
