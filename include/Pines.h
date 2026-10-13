@@ -2,11 +2,11 @@
 
 #include <Arduino.h>
 
-// TFT NO SON LOS QUE USAMOS
 constexpr uint8_t TFT_CS  = 4;
 constexpr uint8_t TFT_RST = 16;
 constexpr uint8_t TFT_DC  = 17;
 
+constexpr uint8_t SD_DC  = 19;  //no probé si funciona
 /*
 // Stepper 1
 constexpr uint8_t STEP1_PIN = 26;
