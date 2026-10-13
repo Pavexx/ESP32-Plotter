@@ -2,11 +2,11 @@
 #include "Pines.h"
 #include "Imagen.h"
 
-TFT::TFT()    //no se por que tiene que ser asi
+DisplayTFT::DisplayTFT()
     : tft(TFT_CS, TFT_DC, TFT_RST) {
 }
 
-void TFT::iniciar() {
+void DisplayTFT::iniciar() {
     Serial.println("Iniciando TFT...");
     tft.initR(INITR_BLACKTAB);
     tft.fillScreen(ST77XX_BLACK);
@@ -16,12 +16,12 @@ void TFT::iniciar() {
     tft.setTextColor(ST77XX_WHITE);
     Serial.println("Display TFT Iniciado");
 }
-void TFT::dibujarPreview() {
+void DisplayTFT::dibujarPreview() {
     Serial.println("Dibujando...");
     uint8_t fila, columna;
-    for (fila = 0; fila < TFT::alto; fila++) {
-            for (columna = 0; columna < TFT::ancho; columna++) {
-            tft.drawPixel(columna, fila, img[(fila*TFT::ancho)+columna]);
+    for (fila = 0; fila < alto; fila++) {
+            for (columna = 0; columna < ancho; columna++) {
+            tft.drawPixel(columna, fila, img[(fila*ancho)+columna]);
         }
     }
 }

@@ -3,7 +3,7 @@
 #include "DisplayTFT.h"
 
 //ServidorWeb web;
-TFT tft;
+DisplayTFT tft;
 
 void setup() {
     Serial.begin(115200);
