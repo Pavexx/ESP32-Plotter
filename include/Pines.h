@@ -7,6 +7,15 @@ constexpr uint8_t TFT_RST = 16;
 constexpr uint8_t TFT_DC  = 17;
 
 constexpr uint8_t SD_DC  = 19;  //no probé si funciona
+
+// PLACEHOLDER: example pins only; adjust for your ESP32 board.
+constexpr int PIN_LEFT_STEP = 25;
+constexpr int PIN_LEFT_DIR  = 26;
+constexpr int PIN_LEFT_EN   = 27;
+
+constexpr int PIN_RIGHT_STEP = 32;
+constexpr int PIN_RIGHT_DIR  = 33;
+constexpr int PIN_RIGHT_EN   = 14;
 /*
 // Stepper 1
 constexpr uint8_t STEP1_PIN = 26;
