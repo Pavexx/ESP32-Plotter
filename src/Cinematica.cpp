@@ -2,6 +2,10 @@
 #include "ConfigMovimiento.h"
 #include <math.h>
 
+// MODULO DE CINEMATICA
+// este modulo calcula la cantidad de pasos necesarios en cada motor
+// para lograr un movimiento lineal en XY
+
 double LargoCorrea(double X, double Y, bool IZQ = true) {
 	const double motorX = IZQ ? 0.0 : Distancia_Motores;
 	const double motorY = 0.0;
