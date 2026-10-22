@@ -1,697 +1,235 @@
-
-
-"use strict";
-
-// ============================================================
-// CONFIGURACIÓN
-// ============================================================
-
-const WIDTH = 128;
-const HEIGHT = 160;
-
-// ============================================================
-// ELEMENTOS HTML
-// ============================================================
-
-const fileInput = document.getElementById("fileInput");
-
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+const fileInput = document.getElementById("fileInput");
 const modo = document.getElementById("modo");
 const rotacion = document.getElementById("rotacion");
-
 const posX = document.getElementById("posX");
 const posY = document.getElementById("posY");
-
-const posXValue = document.getElementById("posXValue");
-const posYValue = document.getElementById("posYValue");
-
-const infoOriginal = document.getElementById("infoOriginal");
-const infoFinal = document.getElementById("infoFinal");
-const tamano = document.getElementById("tamano");
-
-const actualizar = document.getElementById("actualizar");
-const descargar = document.getElementById("descargar");
-const descargarBinario = document.getElementById("descargarBinario");
-
-const autoVertical = document.getElementById("autoVertical");
 const reset = document.getElementById("reset");
+const autoVertical = document.getElementById("autoVertical");
 
-// ============================================================
-// VARIABLES
-// ============================================================
+const ANCHO = 128;
+const ALTO = 160;
 
-let imagen = null;
-let nombreOriginal = "imagen";
+let imagen = new Image();
+let imagenCargada = false;
 
-let datosRGB565 = null;
-let contenidoC = "";
+// Mostrar las barras de posición solo en modo recorte
+function actualizarControles() {
+    const mostrar = modo.value === "crop";
 
+    posX.style.display = mostrar ? "block" : "none";
+    posY.style.display = mostrar ? "block" : "none";
 
-// ============================================================
-// CARGAR IMAGEN
-// ============================================================
+    posX.previousElementSibling.style.display = mostrar ? "block" : "none";
+    posY.previousElementSibling.style.display = mostrar ? "block" : "none";
+}
 
-fileInput.addEventListener("change", function () {
+// Calcular dimensiones de la imagen después del escalado
+function obtenerDimensiones() {
+    const angulo = Number(rotacion.value);
+    const rotadaHorizontal = angulo === 90 || angulo === 270;
 
-    const file = this.files[0];
+    const anchoOriginal = rotadaHorizontal ? imagen.height : imagen.width;
+    const altoOriginal = rotadaHorizontal ? imagen.width : imagen.height;
 
-    if (!file) {
+    let escalaX = ANCHO / anchoOriginal;
+    let escalaY = ALTO / altoOriginal;
+
+    if (modo.value === "crop") {
+        escalaX = escalaY = Math.max(escalaX, escalaY);
+    } else if (modo.value === "contain") {
+        escalaX = escalaY = Math.min(escalaX, escalaY);
+    }
+
+    return {
+        ancho: anchoOriginal * escalaX,
+        alto: altoOriginal * escalaY
+    };
+}
+
+// Dibujar imagen en el canvas
+function dibujarImagen() {
+    ctx.clearRect(0, 0, ANCHO, ALTO);
+
+    if (!imagenCargada) {
+        ctx.fillStyle = "#eeeeee";
+        ctx.fillRect(0, 0, ANCHO, ALTO);
         return;
     }
 
-    nombreOriginal = file.name
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[^a-zA-Z0-9_]/g, "_");
+    const anguloGrados = Number(rotacion.value);
+    const angulo = anguloGrados * Math.PI / 180;
 
-    const url = URL.createObjectURL(file);
+    const dimensiones = obtenerDimensiones();
+    const anchoDibujo = dimensiones.ancho;
+    const altoDibujo = dimensiones.alto;
 
-    const img = new Image();
+    let desplazamientoX = Number(posX.value) * ANCHO / 100;
+    let desplazamientoY = Number(posY.value) * ALTO / 100;
 
-    img.onload = function () {
+    // Limitar movimiento para evitar espacios vacíos
+    if (modo.value === "crop") {
+        const maxX = Math.max(0, (anchoDibujo - ANCHO) / 2);
+        const maxY = Math.max(0, (altoDibujo - ALTO) / 2);
 
-        imagen = img;
+        desplazamientoX = Math.max(
+            -maxX,
+            Math.min(maxX, desplazamientoX)
+        );
 
-        infoOriginal.textContent =
-            img.width +
-            " × " +
-            img.height +
-            " píxeles";
+        desplazamientoY = Math.max(
+            -maxY,
+            Math.min(maxY, desplazamientoY)
+        );
+    }
 
-        // Si es horizontal, sugerir rotación vertical
-        if (img.width > img.height) {
-            rotacion.value = "90";
-        } else {
-            rotacion.value = "0";
-        }
+    ctx.save();
 
-        actualizarImagen();
+    ctx.beginPath();
+    ctx.rect(0, 0, ANCHO, ALTO);
+    ctx.clip();
 
-        URL.revokeObjectURL(url);
+    ctx.translate(
+        ANCHO / 2 + desplazamientoX,
+        ALTO / 2 + desplazamientoY
+    );
+
+    ctx.rotate(angulo);
+
+    if (modo.value === "stretch") {
+        ctx.drawImage(
+            imagen,
+            -ANCHO / 2,
+            -ALTO / 2,
+            ANCHO,
+            ALTO
+        );
+    } else {
+        ctx.drawImage(
+            imagen,
+            -anchoDibujo / 2,
+            -altoDibujo / 2,
+            anchoDibujo,
+            altoDibujo
+        );
+    }
+
+    ctx.restore();
+}
+
+// Cargar imagen sin rotarla automáticamente
+fileInput.addEventListener("change", function () {
+    const archivo = this.files[0];
+
+    if (!archivo) return;
+
+    if (!archivo.type.startsWith("image/")) {
+        alert("Seleccioná un archivo de imagen válido.");
+        return;
+    }
+
+    const lector = new FileReader();
+
+    lector.onload = function (evento) {
+        imagen.onload = function () {
+            imagenCargada = true;
+
+            // Reiniciar posición sin modificar la rotación seleccionada
+            posX.value = "0";
+            posY.value = "0";
+
+            actualizarControles();
+            dibujarImagen();
+        };
+
+        imagen.onerror = function () {
+            alert("No se pudo cargar la imagen.");
+        };
+
+        imagen.src = evento.target.result;
     };
 
-    img.onerror = function () {
-        alert("No se pudo cargar la imagen.");
-    };
-
-    img.src = url;
+    lector.readAsDataURL(archivo);
 });
 
-
-// ============================================================
-// ACTUALIZAR VISTA
-// ============================================================
-
-function actualizarImagen() {
-
-    if (!imagen) {
-        return;
-    }
-
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-    // Fondo negro
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    const grados = parseInt(rotacion.value);
-
-    const radianes = grados * Math.PI / 180;
-
-    const modoActual = modo.value;
-
-    // --------------------------------------------------------
-    // Calcular dimensiones después de rotar
-    // --------------------------------------------------------
-
-    let srcW = imagen.width;
-    let srcH = imagen.height;
-
-    if (grados === 90 || grados === 270) {
-        srcW = imagen.height;
-        srcH = imagen.width;
-    }
-
-    // --------------------------------------------------------
-    // STRETCH
-    // --------------------------------------------------------
-
-    if (modoActual === "stretch") {
-
-        ctx.save();
-
-        ctx.translate(WIDTH / 2, HEIGHT / 2);
-        ctx.rotate(radianes);
-
-        ctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2,
-            imagen.width,
-            imagen.height
-        );
-
-        ctx.restore();
-
-        // En stretch realmente queremos ocupar todo el canvas.
-        // Volvemos a dibujar usando un canvas temporal.
-
-        const temporal = document.createElement("canvas");
-
-        temporal.width = srcW;
-        temporal.height = srcH;
-
-        const tctx = temporal.getContext("2d");
-
-        tctx.save();
-
-        tctx.translate(srcW / 2, srcH / 2);
-        tctx.rotate(radianes);
-
-        tctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2
-        );
-
-        tctx.restore();
-
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
-
-        ctx.drawImage(
-            temporal,
-            0,
-            0,
-            srcW,
-            srcH,
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-    }
-
-    // --------------------------------------------------------
-    // CONTAIN / CROP
-    // --------------------------------------------------------
-
-    else {
-
-        const escalaX = WIDTH / srcW;
-        const escalaY = HEIGHT / srcH;
-
-        let escala;
-
-        if (modoActual === "crop") {
-            escala = Math.max(escalaX, escalaY);
-        } else {
-            escala = Math.min(escalaX, escalaY);
-        }
-
-        const dstW = srcW * escala;
-        const dstH = srcH * escala;
-
-        const desplazamientoX =
-            (WIDTH - dstW) / 2 +
-            parseInt(posX.value);
-
-        const desplazamientoY =
-            (HEIGHT - dstH) / 2 +
-            parseInt(posY.value);
-
-        // Canvas temporal para realizar la rotación
-        const temporal = document.createElement("canvas");
-
-        temporal.width = srcW;
-        temporal.height = srcH;
-
-        const tctx = temporal.getContext("2d");
-
-        tctx.save();
-
-        tctx.translate(srcW / 2, srcH / 2);
-        tctx.rotate(radianes);
-
-        tctx.drawImage(
-            imagen,
-            -imagen.width / 2,
-            -imagen.height / 2
-        );
-
-        tctx.restore();
-
-        ctx.drawImage(
-            temporal,
-            0,
-            0,
-            srcW,
-            srcH,
-            desplazamientoX,
-            desplazamientoY,
-            dstW,
-            dstH
-        );
-    }
-
-    // --------------------------------------------------------
-    // Generar RGB565
-    // --------------------------------------------------------
-
-    generarRGB565();
-
-    // --------------------------------------------------------
-    // Información
-    // --------------------------------------------------------
-
-    infoFinal.innerHTML =
-        "Imagen convertida a <strong>" +
-        WIDTH +
-        " × " +
-        HEIGHT +
-        "</strong> píxeles.<br>" +
-        "Formato: <strong>RGB565</strong><br>" +
-        "Bytes: <strong>" +
-        datosRGB565.length +
-        "</strong>";
-
-    tamano.textContent =
-        datosRGB565.length + " bytes";
-}
-
-
-// ============================================================
-// RGB888 -> RGB565
-// ============================================================
-
-function convertirRGB565(r, g, b) {
-
-    return (
-        ((r & 0xF8) << 8) |
-        ((g & 0xFC) << 3) |
-        (b >> 3)
-    );
-}
-
-
-// ============================================================
-// GENERAR DATOS RGB565
-// ============================================================
-
-function generarRGB565() {
-
-    const imageData =
-        ctx.getImageData(
-            0,
-            0,
-            WIDTH,
-            HEIGHT
-        );
-
-    const pixels = imageData.data;
-
-    datosRGB565 =
-        new Uint8Array(
-            WIDTH * HEIGHT * 2
-        );
-
-    let offset = 0;
-
-    for (let i = 0; i < pixels.length; i += 4) {
-
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-
-        const color =
-            convertirRGB565(r, g, b);
-
-        // ----------------------------------------------------
-        // IMPORTANTE:
-        //
-        // Little endian.
-        //
-        // Esto coincide con el true que usamos en:
-        //
-        // tft.pushColors(..., true);
-        // ----------------------------------------------------
-
-        datosRGB565[offset++] =
-            color & 0xFF;
-
-        datosRGB565[offset++] =
-            (color >> 8) & 0xFF;
-    }
-
-    generarC();
-}
-
-
-// ============================================================
-// GENERAR ARCHIVO .C
-// ============================================================
-
-function generarC() {
-
-    if (!datosRGB565) {
-        return;
-    }
-
-    let texto = "";
-
-    texto +=
-        "#include <stdint.h>\n";
-
-    texto +=
-        "#include <lvgl.h>\n\n";
-
-    texto +=
-        "// =====================================================\n";
-
-    texto +=
-        "// Imagen LVGL\n";
-
-    texto +=
-        "// Resolucion: 128 x 160\n";
-
-    texto +=
-        "// Formato: RGB565\n";
-
-    texto +=
-        "// =====================================================\n\n";
-
-    texto +=
-        "const uint8_t imagen_data[] = {\n";
-
-    for (let i = 0; i < datosRGB565.length; i++) {
-
-        if (i % 16 === 0) {
-            texto += "    ";
-        }
-
-        texto +=
-            "0x" +
-            datosRGB565[i]
-                .toString(16)
-                .padStart(2, "0")
-                .toUpperCase();
-
-        if (i < datosRGB565.length - 1) {
-            texto += ", ";
-        }
-
-        if (i % 16 === 15) {
-            texto += "\n";
+// Actualizar imagen cuando cambian las opciones
+modo.addEventListener("change", function () {
+    actualizarControles();
+    dibujarImagen();
+});
+
+rotacion.addEventListener("change", dibujarImagen);
+posX.addEventListener("input", dibujarImagen);
+posY.addEventListener("input", dibujarImagen);
+
+// Restablecer los ajustes
+reset.addEventListener("click", function () {
+    modo.value = "crop";
+    rotacion.value = "0";
+    posX.value = "0";
+    posY.value = "0";
+
+    actualizarControles();
+    dibujarImagen();
+});
+
+// Generar archivo C en formato RGB565
+function generarArchivoC() {
+    const imagenData = ctx.getImageData(0, 0, ANCHO, ALTO);
+    const pixeles = imagenData.data;
+
+    let contenido = "#include <stdint.h>\n\n";
+    contenido += `const uint16_t imagen_plotter[${ANCHO * ALTO}] = {\n`;
+
+    for (let i = 0; i < pixeles.length; i += 4) {
+        const r = pixeles[i];
+        const g = pixeles[i + 1];
+        const b = pixeles[i + 2];
+
+        const rgb565 =
+            ((r & 0xF8) << 8) |
+            ((g & 0xFC) << 3) |
+            (b >> 3);
+
+        contenido += `0x${rgb565.toString(16).padStart(4, "0")},`;
+
+        if (((i / 4) + 1) % 8 === 0) {
+            contenido += "\n";
         }
     }
 
-    if (datosRGB565.length % 16 !== 0) {
-        texto += "\n";
-    }
+    contenido += "\n};\n";
 
-    texto +=
-        "};\n\n";
+    const blob = new Blob([contenido], {
+        type: "text/plain;charset=utf-8"
+    });
 
-    texto +=
-        "// Descriptor LVGL\n";
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
 
-    texto +=
-        "const lv_image_dsc_t imagen = {\n";
+    enlace.href = url;
+    enlace.download = "imagen_plotter.c";
 
-    texto +=
-        "    .header.magic = LV_IMAGE_HEADER_MAGIC,\n";
-
-    texto +=
-        "    .header.cf = LV_COLOR_FORMAT_RGB565,\n";
-
-    texto +=
-        "    .header.w = 128,\n";
-
-    texto +=
-        "    .header.h = 160,\n";
-
-    texto +=
-        "    .data_size = sizeof(imagen_data),\n";
-
-    texto +=
-        "    .data = imagen_data\n";
-
-    texto +=
-        "};\n";
-
-    contenidoC = texto;
-}
-
-
-// ============================================================
-// DESCARGAR .C
-// ============================================================
-
-descargar.addEventListener("click", function () {
-
-    if (!datosRGB565) {
-        alert("Primero selecciona una imagen.");
-        return;
-    }
-
-    const blob =
-        new Blob(
-            [contenidoC],
-            {
-                type: "text/plain;charset=utf-8"
-            }
-        );
-
-    const url =
-        URL.createObjectURL(blob);
-
-    const a =
-        document.createElement("a");
-
-    a.href = url;
-
-    a.download =
-        "imagen_lvgl.c";
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
 
     URL.revokeObjectURL(url);
+}
+
+// Botón imprimir
+autoVertical.addEventListener("click", function () {
+    if (!imagenCargada) {
+        alert("Primero tenés que cargar una imagen.");
+        return;
+    }
+
+    dibujarImagen();
+    generarArchivoC();
 });
-enviarESP32.addEventListener(
-    "click",
-    async function () {
 
-        if (!datosRGB565) {
-            alert(
-                "Primero selecciona una imagen."
-            );
-
-            return;
-        }
-
-
-        estadoESP32.textContent =
-            "Enviando imagen...";
-
-
-        try {
-
-            const formData =
-                new FormData();
-
-
-            const blob =
-                new Blob(
-                    [datosRGB565],
-                    {
-                        type:
-                            "application/octet-stream"
-                    }
-                );
-
-
-            formData.append(
-                "imagen",
-                blob,
-                "imagen.rgb565"
-            );
-
-
-            const respuesta =
-                await fetch(
-                    "/upload",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-
-            if (!respuesta.ok) {
-                throw new Error(
-                    "HTTP " +
-                    respuesta.status
-                );
-            }
-
-
-            estadoESP32.textContent =
-                "✓ Imagen mostrada en el ESP32";
-
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            estadoESP32.textContent =
-                "✗ Error enviando imagen";
-        }
-    }
-);
-
-
-// ============================================================
-// DESCARGAR BINARIO
-// ============================================================
-
-descargarBinario.addEventListener(
-    "click",
-    function () {
-
-        if (!datosRGB565) {
-            alert("Primero selecciona una imagen.");
-            return;
-        }
-
-        const blob =
-            new Blob(
-                [datosRGB565],
-                {
-                    type: "application/octet-stream"
-                }
-            );
-
-        const url =
-            URL.createObjectURL(blob);
-
-        const a =
-            document.createElement("a");
-
-        a.href = url;
-
-        a.download =
-            "imagen_rgb565.bin";
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        document.body.removeChild(a);
-
-        URL.revokeObjectURL(url);
-    }
-);
-
-
-// ============================================================
-// BOTÓN ACTUALIZAR
-// ============================================================
-
-actualizar.addEventListener(
-    "click",
-    function () {
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// CAMBIOS AUTOMÁTICOS
-// ============================================================
-
-modo.addEventListener(
-    "change",
-    actualizarImagen
-);
-
-rotacion.addEventListener(
-    "change",
-    actualizarImagen
-);
-
-posX.addEventListener(
-    "input",
-    function () {
-
-        posXValue.textContent =
-            posX.value;
-
-        actualizarImagen();
-    }
-);
-
-posY.addEventListener(
-    "input",
-    function () {
-
-        posYValue.textContent =
-            posY.value;
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// ROTACIÓN AUTOMÁTICA
-// ============================================================
-
-autoVertical.addEventListener(
-    "click",
-    function () {
-
-        if (!imagen) {
-            alert("Primero selecciona una imagen.");
-            return;
-        }
-
-        if (imagen.width > imagen.height) {
-            rotacion.value = "90";
-        } else {
-            rotacion.value = "0";
-        }
-
-        actualizarImagen();
-    }
-);
-
-
-// ============================================================
-// RESTABLECER
-// ============================================================
-
-reset.addEventListener(
-    "click",
-    function () {
-
-        modo.value = "crop";
-
-        rotacion.value = "0";
-
-        posX.value = "0";
-        posY.value = "0";
-
-        posXValue.textContent = "0";
-        posYValue.textContent = "0";
-
-        actualizarImagen();
-    }
-);
-
+// Inicialización
+actualizarControles();
+dibujarImagen();

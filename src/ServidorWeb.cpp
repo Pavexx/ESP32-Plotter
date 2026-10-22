@@ -25,7 +25,7 @@ void ServidorWeb::crearAP() {
 void ServidorWeb::crearServidorDNS() {
     LittleFS.begin();
 
-    ServidorDNS.setTTL(3600);
+    //ServidorDNS.setTTL(3600);
     ServidorDNS.start(53, "*", Config::IP);
 
     // Main page
@@ -34,7 +34,7 @@ void ServidorWeb::crearServidorDNS() {
         //request->send(200, "text/html", "<!DOCTYPE html><html><head><title>Success</title></head><body><p>Hooray</p></body>");
         request->send(LittleFS, "/index.html", "text/html");
     });
-
+    /* dejamos de usar ACTIVE PORTAL porque no se pueden cargar archivos, pero funcionaba
     // Android captive portal - generates 204 response code
     server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("Android captive portal check detected");
@@ -63,7 +63,7 @@ void ServidorWeb::crearServidorDNS() {
     server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *request) {
         Serial.println("Firefox captive portal check detected");
         request->send(200, "text/plain", "success");
-    });
+    });*/
 
     // Catch all non-matching requests and serve the page
     server.onNotFound([](AsyncWebServerRequest *request) {
@@ -72,6 +72,13 @@ void ServidorWeb::crearServidorDNS() {
         
         // Serve the HTML page for any unmatched request
         request->send(LittleFS, "/index.html", "text/html");
+    });
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/style.css", "text/css");
+    });
+
+    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/script.js", "text/javascript");
     });
 
     server.begin();
