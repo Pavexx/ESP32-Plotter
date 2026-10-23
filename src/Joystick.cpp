@@ -48,6 +48,6 @@ void Joystick::monitorear() {
     int Yr = analogRead(PIN_Y);
     bool dir = direccion(LR, UD);
     valoresXY(X, Y);
-    String direcc = String(X)+String(Y);
+    String direcc = String(X)+", "+String(Y);
     Serial.println("Joystick | X: " + String(X) + "  Y: " + String(Y) + "  REAL | X: " + String(Xr) + "  Y: " + String(Yr) + " | Direccion:" + String(dir ? direcc : "CENTRO"));
 }
