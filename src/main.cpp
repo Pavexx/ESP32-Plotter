@@ -1,19 +1,24 @@
 #include <Arduino.h>
-//#include "ServidorWeb.h"
+#include "ServidorWeb.h"
 #include "DisplayTFT.h"
+#include "Joystick.h"
 
-//ServidorWeb web;
+ServidorWeb web;
 DisplayTFT tft;
+Joystick jstk;
 
 void setup() {
     Serial.begin(115200);
-    // web.iniciarAP();
-    // web.iniciarSV();
+    //web.iniciar();
     tft.iniciar();
-    tft.dibujarPreview();
+    //tft.dibujarPreview();
+    //jstk.iniciar();
     Serial.println("SETUP TERMINADO");
 }
 
 void loop() {
+    tft.dibujarUI();
     //web.actualizar();
+    //jstk.monitorear();
+    //usleep(500000);
 }
