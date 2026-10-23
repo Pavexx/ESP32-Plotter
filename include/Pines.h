@@ -8,6 +8,10 @@ constexpr uint8_t TFT_DC  = 17;
 
 constexpr uint8_t SD_DC  = 19;  //no probé si funciona
 
+constexpr uint8_t PIN_BTN  = 19;  //pin del boton (no lo elegí)
+constexpr uint8_t PIN_X  = 13;  //pines del joystick (no los elegí)
+constexpr uint8_t PIN_Y  = 14;
+
 // PLACEHOLDER: example pins only; adjust for your ESP32 board.
 constexpr int PIN_LEFT_STEP = 25;
 constexpr int PIN_LEFT_DIR  = 26;
