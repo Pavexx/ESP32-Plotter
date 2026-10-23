@@ -1,31 +1,26 @@
 #pragma once
 
 #include <Arduino.h>
+//no probé si funciona ninguno de estos
+//para el tft van clk 18, mosi 23 y miso 19? no me fijé
+constexpr uint8_t TFT_CS  = 5;
+constexpr uint8_t TFT_RST = 4;
+constexpr uint8_t TFT_DC  = 2;
 
-constexpr uint8_t TFT_CS  = 4;
-constexpr uint8_t TFT_RST = 16;
-constexpr uint8_t TFT_DC  = 17;
+constexpr uint8_t SD_DC  = 21;  
 
-constexpr uint8_t SD_DC  = 19;  //no probé si funciona
+constexpr uint8_t PIN_BTN  = 27;
+constexpr uint8_t PIN_BTN2  = 16;
+constexpr uint8_t PIN_X  = 32;
+constexpr uint8_t PIN_Y  = 33;
 
-constexpr uint8_t PIN_BTN  = 19;  //pin del boton (no lo elegí)
-constexpr uint8_t PIN_X  = 13;  //pines del joystick (no los elegí)
-constexpr uint8_t PIN_Y  = 14;
+constexpr uint8_t PIN_LEFT_STEP = 13;
+constexpr uint8_t PIN_LEFT_DIR  = 12;
+constexpr uint8_t PIN_LEFT_EN   = 14;
 
-// PLACEHOLDER: example pins only; adjust for your ESP32 board.
-constexpr int PIN_LEFT_STEP = 25;
-constexpr int PIN_LEFT_DIR  = 26;
-constexpr int PIN_LEFT_EN   = 27;
-
-constexpr int PIN_RIGHT_STEP = 32;
-constexpr int PIN_RIGHT_DIR  = 33;
-constexpr int PIN_RIGHT_EN   = 14;
-/*
-// Stepper 1
-constexpr uint8_t STEP1_PIN = 26;
-constexpr uint8_t DIR1_PIN  = 27;
-constexpr uint8_t EN1_PIN   = 25;
+constexpr uint8_t PIN_RIGHT_STEP = 26;
+constexpr uint8_t PIN_RIGHT_DIR  = 25;
+constexpr uint8_t PIN_RIGHT_EN   = 22;
 
 // Servo
-constexpr uint8_t SERVO_PIN = 13;
-*/
+constexpr uint8_t SERVO_PIN = 17;
