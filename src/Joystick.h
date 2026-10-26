@@ -7,7 +7,9 @@ public:
     void iniciar();
     bool direccion(int8_t& lr, int8_t& ud);
     bool valoresXY(int16_t& x, int16_t& y);
-    bool botonPresionado();
+    bool switchPresionado();
+    bool boton1Presionado();
+    bool boton2Presionado();
     void monitorear();
 private:
     bool _btnLastState;
