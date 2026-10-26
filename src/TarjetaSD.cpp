@@ -3,10 +3,8 @@
 
 void TarjetaSD::iniciar() {
     Serial.println("Iniciando SD...");
-    pinMode(SD_DC, OUTPUT);
-    digitalWrite(SD_DC, HIGH);
 
-    bool ok = SD.begin(SD_DC);
+    bool ok = SD.begin(SD_CS);
     if (!ok) {
         Serial.println("ERROR iniciando SD");
         return;

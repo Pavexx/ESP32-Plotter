@@ -1,7 +1,7 @@
 #include "Steppers.h"
 #include "ConfigMovimiento.h"
 #include "Cinematica.h"
-
+#include "Pines.h"
 
 Steppers::Steppers() 
     : stepperL(AccelStepper::DRIVER, PIN_LEFT_STEP, PIN_LEFT_DIR),

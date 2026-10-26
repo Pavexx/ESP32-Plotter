@@ -2,15 +2,6 @@
 
 #include <Arduino.h>
 
-// PLACEHOLDER: example pins only; adjust for your ESP32 board.
-constexpr int PIN_LEFT_STEP = 25;
-constexpr int PIN_LEFT_DIR  = 26;
-constexpr int PIN_LEFT_EN   = 27;
-
-constexpr int PIN_RIGHT_STEP = 32;
-constexpr int PIN_RIGHT_DIR  = 33;
-constexpr int PIN_RIGHT_EN   = 14;
-
 // PLACEHOLDER: mechanical calibration
 constexpr double Distancia_Motores = 500.0;
 constexpr double Radio_Polea = 10.0;
@@ -43,7 +34,3 @@ constexpr double G1_MAX_SPEED_MM_S = 30.0;
 
 // PLACEHOLDER: maximum length of each straight XY planner segment.
 constexpr double MAX_SEGMENT_LENGTH_MM = 2.0;
-
-// Driver enable polarity may vary by board/driver wiring.
-constexpr uint8_t DRIVER_ENABLE_LEVEL = LOW;
-constexpr uint8_t DRIVER_DISABLE_LEVEL = HIGH;
