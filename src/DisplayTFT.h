@@ -7,13 +7,13 @@ class DisplayTFT {
 public:
     DisplayTFT();
     void iniciar();
-    void dibujarUI();
+    void dibujarUI(int8_t estado, int8_t i);
+    //0 inicio, 1 lista de gcodes, 2 preview,
+    //3 calibrar A, 4 calibrar B, 4 calibrar C
     void dibujarPreview();
     const uint8_t alto = 160;
     const uint8_t ancho = 128;
 private:
-    void boton(String texto, uint8_t x, uint8_t y);
-    const uint8_t ancho_boton = 20;
-    const uint8_t largo_boton = 30;
+    void boton(bool selecc, uint8_t i);
     Adafruit_ST7735 tft;
 };
