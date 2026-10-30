@@ -7,7 +7,7 @@ class Steppers {
 public:
     Steppers();
     void iniciar();
-    void controlManual(int8_t x, int8_t y);
+    void controlManual(int8_t x, int8_t y, uint8_t dirx, int8_t diry);
     //bool controlManual(const GcodeCommand& command);
 
 private: 
