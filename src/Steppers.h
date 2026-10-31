@@ -1,7 +1,6 @@
 #pragma once
 
 #include <AccelStepper.h>
-#include <MultiStepper.h>
 
 class Steppers {
 public:
@@ -13,5 +12,4 @@ public:
 private: 
     AccelStepper stepperL;
     AccelStepper stepperR;
-    MultiStepper multiStepper;
 };
