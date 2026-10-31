@@ -6,7 +6,8 @@ void Joystick::iniciar() {
     pinMode(PIN_BTN1, INPUT_PULLUP);
     pinMode(PIN_BTN2, INPUT_PULLUP);
     analogSetAttenuation(ADC_11db);
-    _btnLastState = false;
+    _btn1Estado = false;
+    _btn2Estado = false;
 }
 
 bool Joystick::valoresXY(int16_t& x, int16_t& y) {
@@ -44,14 +45,14 @@ bool Joystick::switchPresionado() {
 
 bool Joystick::boton1Presionado() {
     bool btnState = !digitalRead(PIN_BTN1);
-    bool pressed = btnState && !_btnLastState;
-    _btnLastState = btnState;
+    bool pressed = btnState && !_btn1Estado;
+    _btn1Estado = btnState;
     return pressed;
 }
 bool Joystick::boton2Presionado() {
     bool btnState = !digitalRead(PIN_BTN2);
-    bool pressed = btnState && !_btnLastState;
-    _btnLastState = btnState;
+    bool pressed = btnState && !_btn2Estado;
+    _btn2Estado = btnState;
     return pressed;
 }
 
