@@ -19,6 +19,7 @@ void App::iniciar() {
     servo.iniciar();
     steppers.iniciar();
     Serial.println("SETUP TERMINADO");
+    _estado = 1;
 }
 
 void App::ciclo() {
