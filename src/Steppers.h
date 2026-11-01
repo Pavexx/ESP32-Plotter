@@ -12,9 +12,10 @@ public:
     void iniciar();
     void controlManual(FastAccelStepper *stepper, int16_t valorJoystick);
     void calibrar(Joystick jstk, DisplayTFT tft);
+    bool sumarPlaner(int32_t* objetivo, uint16_t& i, uint16_t total);
 private:
     FastAccelStepper *stepperL;
     FastAccelStepper *stepperR;
-    int32_t _PasosL, _PasosR;
+    int32_t _PasosInicio[2];
     int32_t _Pasos0L, _Pasos0R;
 };
