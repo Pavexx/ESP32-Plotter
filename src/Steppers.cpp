@@ -3,10 +3,6 @@
 #include "Cinematica.h"
 #include "Pines.h"
 
-// Steppers::Steppers() {
-//     stepperL.begin(PIN_LEFT_STEP, PIN_LEFT_DIR);
-//     stepperR.begin(PIN_RIGHT_STEP, PIN_RIGHT_DIR);
-// }
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
 Steppers::Steppers() {
@@ -24,13 +20,23 @@ Steppers::Steppers() {
 void Steppers::iniciar() {
     stepperL->setDirectionPin(PIN_LEFT_DIR);
     stepperR->setDirectionPin(PIN_RIGHT_DIR);
+
     stepperL->setSpeedInHz(800);
-    stepperL->setAcceleration(4000);
+    stepperL->setAcceleration(1000);
+
     stepperR->setSpeedInHz(800);
-    stepperR->setAcceleration(4000);
+    stepperR->setAcceleration(1000);
 }
 
-void Steppers::controlManual(int8_t x, int8_t y, uint8_t dirx, int8_t diry) {
-    stepperR->setSpeedInHz(800);
-    stepperR->setSpeedInHz(800);
+void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
+    int velocidad = abs(valorJoystick) * 50 / 127;
+    stepper->setSpeedInHz(velocidad);
+
+    if (valorJoystick > 0) {
+    stepper->runForward();   // Positive = forward
+    } else if (valorJoystick < 0) {
+    stepper->runBackward();   // Negative = backward
+    } else {
+    stepper->forceStop();     // Zero = stop
+    }
 }
