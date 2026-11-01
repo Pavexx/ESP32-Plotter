@@ -20,30 +20,6 @@ void App::iniciar() {
     steppers.iniciar();
     Serial.println("SETUP TERMINADO");
 }
-void App::calibrar() {
-    jstk.boton1Presionado();
-    Serial.println("Iniciando cereado");
-    tft.dibujarUI(3);
-    while (!jstk.boton1Presionado()) {
-        int16_t velL, velR;
-        jstk.valoresXY(velL, velR);
-        steppers.controlManual(steppers.stepperL, velL);
-        steppers.controlManual(steppers.stepperR, velR);
-    }
-    _Pasos0L = steppers.stepperL->getPositionAfterCommandsCompleted();
-    _Pasos0R = steppers.stepperR->getPositionAfterCommandsCompleted();
-
-    Serial.println("Cereado finalizado");
-    Serial.println("Iniciando calibracion esquina sup-der");
-    tft.dibujarUI(4);
-    while (!jstk.boton1Presionado()) {
-        int16_t velL, velR;
-        jstk.valoresXY(velL, velR);
-        steppers.controlManual(steppers.stepperL, velL);
-        steppers.controlManual(steppers.stepperR, velR);
-    }
-    Serial.println("calibracion terminada");
-}
 
 void App::ciclo() {
     sleep(1);
