@@ -7,9 +7,9 @@ class DisplayTFT {
 public:
     DisplayTFT();
     void iniciar();
-    void dibujarUI(int8_t estado, int8_t i);
+    void dibujarUI(int8_t estado, int8_t i = 0);
     //0 inicio, 1 lista de gcodes, 2 preview,
-    //3 calibrar A, 4 calibrar B, 4 calibrar C
+    //3 calibrar A, 4 calibrar B, 5 calibrar C
     void dibujarPreview();
     const uint8_t alto = 160;
     const uint8_t ancho = 128;
