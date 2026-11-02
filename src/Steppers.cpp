@@ -43,31 +43,10 @@ void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
     }
 }
 
-void Steppers::calibrar(Joystick jstk, DisplayTFT tft) {
-    jstk.boton1Presionado();
-    Serial.println("Iniciando cereado");
-    tft.dibujarUI(3);
-    while (!jstk.boton1Presionado()) {
-        int16_t velL, velR;
-        jstk.valoresXY(velL, velR);
-        controlManual(stepperL, velL);
-        controlManual(stepperR, velR);
-    }
-    _Pasos0L = stepperL->getPositionAfterCommandsCompleted();
-    _Pasos0R = stepperR->getPositionAfterCommandsCompleted();
-    Serial.println("Cereado finalizado");
-    Serial.println("Iniciando calibracion esquina sup-der");
-    tft.dibujarUI(4);
-    while (!jstk.boton1Presionado()) {
-        int16_t velL, velR;
-        jstk.valoresXY(velL, velR);
-        controlManual(stepperL, velL);
-        controlManual(stepperR, velR);
-    }
-    _PasosInicio[0] = stepperL->getPositionAfterCommandsCompleted();
-    _PasosInicio[1] = stepperR->getPositionAfterCommandsCompleted();
-    Serial.println("calibracion terminada, activando planner");
-    planner.setCurrentPosition(_PasosInicio);
+void Steppers::cero() {
+    _pasosInicio[0] = stepperL->getPositionAfterCommandsCompleted();
+    _pasosInicio[1] = stepperR->getPositionAfterCommandsCompleted();
+    planner.setCurrentPosition(_pasosInicio);
 }
 
 //https://github.com/gin66/FastAccelStepper/blob/master/examples/NaxesAFAP/NaxesAFAP.ino
