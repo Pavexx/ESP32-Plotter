@@ -16,6 +16,10 @@ bool Joystick::valoresXY(int16_t& x, int16_t& y) {
     
     x = mapearADC(jx, ValorCentralX - Tolerancia, ValorCentralX + Tolerancia);
     y = mapearADC(jy, ValorCentralY - Tolerancia, ValorCentralY + Tolerancia);
+    if (switchPresionado()){
+        x = x*2;
+        y = y*2;
+    }
     return !(x == 0 && y == 0);
 }
 

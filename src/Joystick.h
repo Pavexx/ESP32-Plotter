@@ -15,7 +15,7 @@ private:
     bool _btn1Estado;
     bool _btn2Estado;
     inline int8_t mapearADC(int16_t value, int16_t v1, int16_t v2);
-    static const int ValorCentralX = 1860;
-    static const int ValorCentralY = 1875;
+    static const int ValorCentralX = 1865;
+    static const int ValorCentralY = 1850;
     static const int Tolerancia = 20;
 };

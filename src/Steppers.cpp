@@ -6,33 +6,33 @@
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FasNAxis<2, 32> planner(FasNAxisConfig{}, engine);
 
-Steppers::Steppers() {
-    stepperL = engine.stepperConnectToPin(PIN_LEFT_STEP);
-    stepperR = engine.stepperConnectToPin(PIN_RIGHT_STEP);
-    if (!stepperL || !stepperR) {
-        while (true) {
-            Serial.println("error declarando steppers");
-        }
-    }
-}
+Steppers::Steppers() : stepperL(nullptr), stepperR(nullptr) {}
 
 void Steppers::iniciar() {
     engine.init();
+
+    stepperL = engine.stepperConnectToPin(PIN_LEFT_STEP);
+    stepperR = engine.stepperConnectToPin(PIN_RIGHT_STEP);
+    if (!stepperL || !stepperR) {
+        Serial.println("Error connecting steppers");
+        return;
+    }
     stepperL->setDirectionPin(PIN_LEFT_DIR);
     stepperR->setDirectionPin(PIN_RIGHT_DIR);
     stepperL->setSpeedInHz(800);
-    stepperL->setAcceleration(1000);
+    stepperL->setAcceleration(1200);
     stepperR->setSpeedInHz(800);
-    stepperR->setAcceleration(1000);
-    // inicia el planner con dos ejes y 32 lugares
+    stepperR->setAcceleration(1200);
+
     planner.addAxis(0, stepperL);
     planner.addAxis(1, stepperR);
     planner.setLimitsFromSteppers();
-    Serial.println("Steppers y Planner iniciados");
+
+    Serial.println("Steppers and planner initialized");
 }
 
 void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
-    int velocidad = abs(valorJoystick) * 5 / 127;
+    int velocidad = abs(map(valorJoystick, -254, 254, -800, 800));
     stepper->setSpeedInHz(velocidad);
     if (valorJoystick > 0) {
     stepper->runForward();   // Positive = forward
