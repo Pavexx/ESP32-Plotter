@@ -7,12 +7,13 @@ class TarjetaSD {
 public:
     void iniciar();
     void listarGcodes(Stream& salida);
+    bool abrir(const char* direccion);
+    void cerrar();
+    bool leerLinea(File &file, uint32_t linea, char *out, size_t outSize);
     bool escribirLinea(const char* direccion, const char* linea);
     bool crearVacio(const char* direccion);
-    bool abrir(const char* direccion);
-    bool leerLinea(char* buffer, size_t bufferSize);
     void cerrar();
 private:
-    File _readFile;;
+    File _readFile;
     bool esGcode(const char* nombre);
 };
