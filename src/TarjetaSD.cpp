@@ -3,7 +3,7 @@
 
 void TarjetaSD::iniciar() {
     Serial.println("Iniciando SD...");
-
+    //SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
     bool ok = SD.begin(SD_CS);
     if (!ok) {
         Serial.println("ERROR iniciando SD");
@@ -35,7 +35,7 @@ void TarjetaSD::cerrar() {
     if (_readFile) _readFile.close();
 }
 
-bool leerLinea(File &file, uint32_t linea, char *out, size_t outSize) {
+bool TarjetaSD::leerLinea(File &file, uint32_t linea, char *out, size_t outSize) {
     file.seek(0);
 
     uint32_t currentLine = 0;
@@ -65,10 +65,26 @@ bool leerLinea(File &file, uint32_t linea, char *out, size_t outSize) {
     return false;
 }
 
-bool esGcode(const char* nombre) {
+bool TarjetaSD::esGcode(const char* nombre) {
     const char* extension = strrchr(nombre, '.');
     if (!extension) {
         return false;
     }
     return strcasecmp(extension, ".gcode") == 0;
+}
+
+void TarjetaSD::dryRun(const char* direccion) {
+    if (!abrir(direccion)) {
+        return;
+    }
+    bool fin = false;
+    Serial.println("iniciando dry run");
+    for (int16_t i = 0; !fin; i++) {
+        char* salida;
+        fin = !leerLinea(_readFile, i, salida, 128);
+        Serial.println(salida);
+    }
+    Serial.println("finalizado");
+
+    cerrar();
 }
