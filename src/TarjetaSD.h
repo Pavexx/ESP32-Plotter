@@ -12,7 +12,7 @@ public:
     bool leerLinea(File &file, uint32_t linea, char *out, size_t outSize);
     bool escribirLinea(const char* direccion, const char* linea);
     bool crearVacio(const char* direccion);
-    void cerrar();
+    void dryRun(const char* direccion);
 private:
     File _readFile;
     bool esGcode(const char* nombre);

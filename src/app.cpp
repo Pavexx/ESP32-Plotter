@@ -4,12 +4,14 @@
 #include "Joystick.h"
 #include "Steppers.h"
 #include "Servomotor.h"
+#include "TarjetaSD.h"
 
 ServidorWeb web;
 DisplayTFT tft;
 Joystick jstk;
 Steppers steppers;
 Servomotor servo;
+TarjetaSD sd;
 
 void App::iniciar() {
     Serial.begin(115200);
@@ -18,9 +20,12 @@ void App::iniciar() {
     jstk.iniciar();
     servo.iniciar();
     steppers.iniciar();
+    sd.iniciar();
     Serial.println("SETUP TERMINADO");
     _estado = 1;
-    calibrar();
+    //calibrar();
+    sd.listarGcodes(Serial);
+    sd.dryRun("/squiggleCam.gcode");
 }
 
 void App::ciclo() {
