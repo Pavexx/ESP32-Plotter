@@ -11,7 +11,7 @@ DisplayTFT::DisplayTFT()
 void DisplayTFT::iniciar() {
     Serial.println("Iniciando TFT...");
     tft.initR(INITR_BLACKTAB);
-    tft.fillScreen(ST77XX_BLACK);
+    tft.fillScreen(ST77XX_WHITE);
     //tft.setRotation(1);
     tft.setTextWrap(false); //texto por defecto (se puede cambiar)
     tft.setTextSize(1);
@@ -30,14 +30,14 @@ void DisplayTFT::dibujarPreview() {
 void DisplayTFT::dibujarUI(int8_t estado, int8_t i) {
     switch (estado) {
     case 1:
-        tft.fillScreen(0xFFFF);
+        //tft.fillScreen(0xFFFF);
         tft.setFont(&FreeSansBold12pt7b);
         tft.setTextColor(0x0014);
         tft.setCursor(26, 26);
         tft.print("Plotter");
-        boton(i==1, i);
-        boton(i==2, i);
-        boton(i==3, i);
+        boton(i==0, 0);
+        boton(i==1, 1);
+        boton(i==2, 2);
         break;
     case 2:
         /* code */
@@ -49,24 +49,32 @@ void DisplayTFT::dibujarUI(int8_t estado, int8_t i) {
         break;
     }
 }
-void DisplayTFT::boton(bool selecc, uint8_t i) {
-    tft.fillRoundRect(7, 37+i*41, 116, 36, 7, 0x0014);
-    if (selecc) {
-        tft.fillRoundRect(5, 35+i*41, 120, 40, 7, 0xFC00);
+void DisplayTFT::boton(bool selecc, uint8_t n) {
+    //tft.fillRoundRect(5, 33+i*41, 120, 40, 7, selecc ? 0xFC00 : 0xFFFF);
+    if (select)
+    {
+        tft.fillRoundRect(5, 33+n*41, 120, 40, 7, 0xFC00);
+    } else {
+        tft.drawRoundRect(5, 33, 120, 40, 7, 0xFFFF);
+        tft.drawRoundRect(6, 34, 118, 38, 8, 0xFFFF);
+        tft.drawRoundRect(5, 33, 120, 40, 9, 0xFFFF);
+        tft.drawRoundRect(5, 33, 120, 40, 10, 0xFFFF);
     }
+    
+    tft.fillRoundRect(7, 35+n*41, 116, 36, 7, 0x0014);
     tft.setFont(&FreeSansBold9pt7b);
     tft.setTextColor(selecc ? 0xFC00 : 0xFFFF);
-    switch (i) {
+    switch (n) {
     case 0:
-        tft.setCursor(33, 60);
+        tft.setCursor(33, 58);
         tft.print("Dibujar");
         break;
     case 1:
-        tft.setCursor(33, 101);
+        tft.setCursor(33, 99);
         tft.print("Manual");
         break;
     default:
-        tft.setCursor(12, 142);
+        tft.setCursor(12, 140);
         tft.print("Prueba Hoja");
         break;
     }
