@@ -13,7 +13,7 @@ constexpr double Xinicio = 250.0;
 
 // PLACEHOLDER: motor/pulley values
 constexpr int PasosPorVuelta = 200;
-constexpr int MICROSTEPS = 16;        // choose to match driver configuration
+constexpr int MICROSTEPS = 8;        // choose to match driver configuration
 constexpr int GT2_Dientes = 20;       // PLACEHOLDER
 constexpr double GT2_PasoMM = 2.0;    // PLACEHOLDER
 
@@ -27,10 +27,6 @@ constexpr double GCODE_SCALE_X = 1.0;
 constexpr double GCODE_SCALE_Y = 1.0;
 constexpr double GCODE_OFFSET_X_MM = 0.0;
 constexpr double GCODE_OFFSET_Y_MM = 0.0;
-
-// PLACEHOLDER speeds, in canvas mm/s. G-code F is ignored.
-constexpr double G0_MAX_SPEED_MM_S = 100.0;
-constexpr double G1_MAX_SPEED_MM_S = 30.0;
 
 // PLACEHOLDER: maximum length of each straight XY planner segment.
 constexpr double MAX_SEGMENT_LENGTH_MM = 2.0;
