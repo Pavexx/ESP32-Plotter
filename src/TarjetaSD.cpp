@@ -1,11 +1,13 @@
 #include "TarjetaSD.h"
 #include "Pines.h"
 
+//SPIClass sdSPI(VSPI);
+
 void TarjetaSD::iniciar() {
     Serial.println("Iniciando SD...");
-    //SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-    bool ok = SD.begin(SD_CS);
-    if (!ok) {
+    SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+    SPI.setDataMode(SPI_MODE0);
+    if (!SD.begin(SD_CS)) {
         Serial.println("ERROR iniciando SD");
         return;
     }
