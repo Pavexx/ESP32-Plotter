@@ -8,7 +8,7 @@ constexpr uint8_t TFT_DC  = 13; //A0
 //GPIO18 → TFT SCK + SD SCK
 //GPIO23 → TFT SDA + SD MOSI
 //GPIO19 → SD MISO
-constexpr uint8_t SD_CS  = 21;
+constexpr uint8_t SD_CS  = 22;
 
 constexpr uint8_t PIN_SW  = 4;
 constexpr uint8_t PIN_X  = 34;
