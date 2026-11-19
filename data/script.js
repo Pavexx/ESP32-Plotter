@@ -14,6 +14,7 @@ const ALTO = 160;
 
 let imagen = new Image();
 let imagenCargada = false;
+let currentRotation = 0; // State for rotation
 
 // Mostrar las barras de posición solo en modo recorte
 function actualizarControles() {
@@ -28,7 +29,7 @@ function actualizarControles() {
 
 // Calcular dimensiones de la imagen después del escalado
 function obtenerDimensiones() {
-    const angulo = Number(rotacion.value);
+    const angulo = currentRotation;
     const rotadaHorizontal = angulo === 90 || angulo === 270;
 
     const anchoOriginal = rotadaHorizontal ? imagen.height : imagen.width;
@@ -39,8 +40,6 @@ function obtenerDimensiones() {
 
     if (modo.value === "crop") {
         escalaX = escalaY = Math.max(escalaX, escalaY);
-    } else if (modo.value === "contain") {
-        escalaX = escalaY = Math.min(escalaX, escalaY);
     }
 
     return {
@@ -59,12 +58,19 @@ function dibujarImagen() {
         return;
     }
 
-    const anguloGrados = Number(rotacion.value);
-    const angulo = anguloGrados * Math.PI / 180;
+    // const anguloGrados = Number(rotacion.value);
+    // const angulo = anguloGrados * Math.PI / 180;
+    const angulo = currentRotation * Math.PI / 180;
 
     const dimensiones = obtenerDimensiones();
     const anchoDibujo = dimensiones.ancho;
     const altoDibujo = dimensiones.alto;
+
+    //añadido por prod pavex para evitar desplazar con valores viejos en modo estirar
+    if (modo.value === "stretch") {
+        posX.value = "0";
+        posY.value = "0";
+    }
 
     let desplazamientoX = Number(posX.value) * ANCHO / 100;
     let desplazamientoY = Number(posY.value) * ALTO / 100;
@@ -96,7 +102,7 @@ function dibujarImagen() {
         ALTO / 2 + desplazamientoY
     );
 
-    ctx.rotate(angulo);
+    
 
     if (modo.value === "stretch") {
         ctx.drawImage(
@@ -115,7 +121,7 @@ function dibujarImagen() {
             altoDibujo
         );
     }
-
+    ctx.rotate(angulo);
     ctx.restore();
 }
 
@@ -154,20 +160,25 @@ fileInput.addEventListener("change", function () {
     lector.readAsDataURL(archivo);
 });
 
+rotacion.addEventListener("click", function () {
+    currentRotation = (currentRotation+90)%360;
+    obtenerDimensiones();
+    dibujarImagen();
+});
+
 // Actualizar imagen cuando cambian las opciones
 modo.addEventListener("change", function () {
     actualizarControles();
     dibujarImagen();
 });
 
-rotacion.addEventListener("change", dibujarImagen);
 posX.addEventListener("input", dibujarImagen);
 posY.addEventListener("input", dibujarImagen);
 
 // Restablecer los ajustes
 reset.addEventListener("click", function () {
     modo.value = "crop";
-    rotacion.value = "0";
+    currentRotation = "0";
     posX.value = "0";
     posY.value = "0";
 
@@ -175,49 +186,6 @@ reset.addEventListener("click", function () {
     dibujarImagen();
 });
 
-// Generar archivo C en formato RGB565
-function generarArchivoC() {
-    const imagenData = ctx.getImageData(0, 0, ANCHO, ALTO);
-    const pixeles = imagenData.data;
-
-    let contenido = "#include <stdint.h>\n\n";
-    contenido += `const uint16_t imagen_plotter[${ANCHO * ALTO}] = {\n`;
-
-    for (let i = 0; i < pixeles.length; i += 4) {
-        const r = pixeles[i];
-        const g = pixeles[i + 1];
-        const b = pixeles[i + 2];
-
-        const rgb565 =
-            ((r & 0xF8) << 8) |
-            ((g & 0xFC) << 3) |
-            (b >> 3);
-
-        contenido += `0x${rgb565.toString(16).padStart(4, "0")},`;
-
-        if (((i / 4) + 1) % 8 === 0) {
-            contenido += "\n";
-        }
-    }
-
-    contenido += "\n};\n";
-
-    const blob = new Blob([contenido], {
-        type: "text/plain;charset=utf-8"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-
-    enlace.href = url;
-    enlace.download = "imagen_plotter.c";
-
-    document.body.appendChild(enlace);
-    enlace.click();
-    enlace.remove();
-
-    URL.revokeObjectURL(url);
-}
 
 // Botón imprimir
 autoVertical.addEventListener("click", function () {
@@ -227,7 +195,6 @@ autoVertical.addEventListener("click", function () {
     }
 
     dibujarImagen();
-    generarArchivoC();
 });
 
 // Inicialización
