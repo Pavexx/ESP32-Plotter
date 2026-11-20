@@ -65,22 +65,24 @@ bool Steppers::sumarPlaner(int32_t* objetivo, uint16_t& i, uint16_t total) {
 
 void Steppers::dibujarPrueba() {
     int32_t xy[2] = {0};
-    switch (a) {
+    int32_t lr[2] = {0};
+    switch (i) {
     case 1:
-        xy[0] = 2000;
+        xy[0] = 10;
         break;
     case 2:
-        xy[1] = 2000;
-        xy[0] = 2000;
+        xy[1] = 10;
+        xy[0] = 10;
         break;
     case 3:
-        xy[1] = 2000;
+        xy[1] = 10;
         break;
     }
-    bool ok = planner.addWaypoint(xy);
+    XYaPasos(xy[0], xy[1], lr[0], lr[2]);
+    bool ok = sumarPlaner(lr, i, 4);
     planner.pump();
-    //Serial.println("yendo a x:"+String(xy[0])+" y:"+String(xy[1])+" | paso "+String(a));
+    Serial.println("yendo a x:"+String(xy[0])+" y:"+String(xy[1])+" | paso "+String(i));
     if (ok) {
-        a = (a + 1) % 4;
+        i = (i + 1) % 4;
     }
 }

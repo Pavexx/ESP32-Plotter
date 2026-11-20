@@ -17,5 +17,5 @@ public:
     FastAccelStepper *stepperL;
     FastAccelStepper *stepperR;
 private:
-    uint8_t a = 0;
+    uint16_t i = 0;
 };
