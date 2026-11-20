@@ -20,10 +20,10 @@ void Steppers::iniciar() {
     }
     stepperL->setDirectionPin(PIN_LEFT_DIR);
     stepperR->setDirectionPin(PIN_RIGHT_DIR);
-    stepperL->setSpeedInHz(800);
-    stepperL->setAcceleration(1200);
-    stepperR->setSpeedInHz(800);
-    stepperR->setAcceleration(1200);
+    stepperL->setSpeedInHz(VelocidadMaximaPasoPSeg);
+    stepperL->setAcceleration(AceleracionMaxima);
+    stepperR->setSpeedInHz(VelocidadMaximaPasoPSeg);
+    stepperR->setAcceleration(AceleracionMaxima);
 
     planner.addAxis(0, stepperL);
     planner.addAxis(1, stepperR);
