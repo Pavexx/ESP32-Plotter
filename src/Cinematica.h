@@ -2,4 +2,4 @@
 
 #include <Arduino.h>
 
-void XYaPasos(double X, double Y, int64_t& PasosIzq, int64_t& PasosDer);
+void XYaPasos(float X, float Y, int32_t& PasosIzq, int32_t& PasosDer);
