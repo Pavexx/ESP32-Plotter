@@ -2,31 +2,33 @@
 
 #include <Arduino.h>
 
-// PLACEHOLDER: mechanical calibration
-constexpr double Distancia_Motores = 500.0;
-constexpr double Radio_Polea = 10.0;
-constexpr double Desfase_Gondola_X = 0.0;
-constexpr double Desfase_Gondola_Y = 0.0;
+constexpr int VelocidadMaximaPasoPSeg = 2000;
+constexpr int AceleracionMaxima = 2000;
 
-constexpr double Yinicio = 300.0;
-constexpr double Xinicio = 250.0;
+constexpr float Distancia_Motores = 700.0f;
+constexpr float Radio_Polea = 9.55f;
+constexpr float Desfase_Gondola_X = 0.0f;
+constexpr float Desfase_Gondola_Y = 0.0f;
+
+constexpr float Yinicio = 190.0f;
+constexpr float Xinicio = 250.0f;
 
 // PLACEHOLDER: motor/pulley values
 constexpr int PasosPorVuelta = 200;
 constexpr int MICROSTEPS = 8;        // choose to match driver configuration
-constexpr int GT2_Dientes = 20;       // PLACEHOLDER
-constexpr double GT2_PasoMM = 2.0;    // PLACEHOLDER
+constexpr int GT2_Dientes = 30;
+constexpr float GT2_PasoMM = 2.0f;
 
-// Flip either sign if that motor runs the wrong way.
-constexpr int LEFT_DIRECTION_SIGN = 1;
-constexpr int RIGHT_DIRECTION_SIGN = 1;
+// Valores de cinematica precalculados
+constexpr float PasosPorMM = (PasosPorVuelta * MICROSTEPS) / (GT2_Dientes * GT2_PasoMM);
+constexpr float Radio_Polea_sq = Radio_Polea * Radio_Polea;
 
 // G-code coordinate transform:
 // canvas = gcode * scale + offset
-constexpr double GCODE_SCALE_X = 1.0;
-constexpr double GCODE_SCALE_Y = 1.0;
-constexpr double GCODE_OFFSET_X_MM = 0.0;
-constexpr double GCODE_OFFSET_Y_MM = 0.0;
+constexpr float GCODE_SCALE_X = 1.0f;
+constexpr float GCODE_SCALE_Y = 1.0f;
+constexpr float GCODE_OFFSET_X_MM = 0.0f;
+constexpr float GCODE_OFFSET_Y_MM = 0.0f;
 
 // PLACEHOLDER: maximum length of each straight XY planner segment.
-constexpr double MAX_SEGMENT_LENGTH_MM = 2.0;
+constexpr float MAX_SEGMENT_LENGTH_MM = 2.0f;
