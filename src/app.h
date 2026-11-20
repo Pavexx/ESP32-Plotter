@@ -7,6 +7,7 @@ public:
     void iniciar();
     void ciclo();
     void calibrar();
+    void dibujarPrueba();
 private:
     int8_t _estado = 0;
 };

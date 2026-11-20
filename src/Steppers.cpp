@@ -4,6 +4,7 @@
 #include "Pines.h"
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
+FastAccelStepper* NaxesAFAP_s[2] = {NULL};
 FasNAxis<2, 32> planner(FasNAxisConfig{}, engine);
 
 Steppers::Steppers() : stepperL(nullptr), stepperR(nullptr) {}
@@ -44,9 +45,8 @@ void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
 }
 
 void Steppers::cero() {
-    _pasosInicio[0] = stepperL->getPositionAfterCommandsCompleted();
-    _pasosInicio[1] = stepperR->getPositionAfterCommandsCompleted();
-    planner.setCurrentPosition(_pasosInicio);
+    int32_t origen[2] = {0, 0};
+    planner.setCurrentPosition(origen);
 }
 
 //https://github.com/gin66/FastAccelStepper/blob/master/examples/NaxesAFAP/NaxesAFAP.ino
@@ -61,4 +61,26 @@ bool Steppers::sumarPlaner(int32_t* objetivo, uint16_t& i, uint16_t total) {
     }
     planner.pump();
     return (!planner.isBusy() && i >= total);   //true si el planner terminó
+}
+
+void Steppers::dibujarPrueba() {
+    int32_t xy[2] = {0};
+    switch (a) {
+    case 1:
+        xy[0] = 2000;
+        break;
+    case 2:
+        xy[1] = 2000;
+        xy[0] = 2000;
+        break;
+    case 3:
+        xy[1] = 2000;
+        break;
+    }
+    bool ok = planner.addWaypoint(xy);
+    planner.pump();
+    //Serial.println("yendo a x:"+String(xy[0])+" y:"+String(xy[1])+" | paso "+String(a));
+    if (ok) {
+        a = (a + 1) % 4;
+    }
 }

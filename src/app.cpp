@@ -20,16 +20,17 @@ void App::iniciar() {
     jstk.iniciar();
     servo.iniciar();
     steppers.iniciar();
-    sd.iniciar();
+    //sd.iniciar();
     Serial.println("SETUP TERMINADO");
     _estado = 1;
+    steppers.cero();
     //calibrar();
-    sd.listarGcodes(Serial);
-    sd.dryRun("/squiggleCam.gcode");
+    //sd.listarGcodes(Serial);
+    //sd.dryRun("/squiggleCam.gcode");
 }
 
 void App::ciclo() {
-    sleep(1);
+    steppers.dibujarPrueba();
 }
 
 void App::calibrar() {
