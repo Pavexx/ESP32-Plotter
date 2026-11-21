@@ -6,6 +6,7 @@
 #include "Servomotor.h"
 #include "TarjetaSD.h"
 #include "GCodes.h"
+#include "Cinematica.h"
 
 ServidorWeb web;
 DisplayTFT tft;
@@ -22,17 +23,18 @@ void App::iniciar() {
     jstk.iniciar();
     servo.iniciar();
     steppers.iniciar();
-    //sd.iniciar();
+    sd.iniciar();
     Serial.println("SETUP TERMINADO");
     _estado = 1;
     steppers.cero();
     //calibrar();
     //sd.listarGcodes(Serial);
     //sd.dryRun("/squiggleCam.gcode");
+    steppers.dibujarPrueba();
 }
 
 void App::ciclo() {
-    steppers.dibujarPrueba();
+
 }
 
 void App::calibrar() {
@@ -60,7 +62,6 @@ void App::ejecutarComando(char* linea) {
 
         case CMD_G28:
         Serial.println("Yendo a home");
-        
         steppers.sumarPlaner(h, i, 1);
         break;
 
@@ -78,7 +79,7 @@ void App::ejecutarComando(char* linea) {
         servo.bajarLapiz();
         break;
     
-    default:
+        default:
         break;
     }
 }
