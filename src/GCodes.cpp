@@ -36,8 +36,8 @@ bool GCodes::obtenerXY(char* line, float& x, float& y) {
 
     if (!parser.HasWord('X') || !parser.HasWord('Y')) return false;
 
-    x = parser.GetWordValue('X');
-    y = parser.GetWordValue('Y');
+    x = std::round(parser.GetWordValue('X') * 1000.0f) / 1000.0f;
+    y = std::round(parser.GetWordValue('Y') * 1000.0f) / 1000.0f;
     return true;
 }
 
