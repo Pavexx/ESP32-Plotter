@@ -1,10 +1,13 @@
 #include "TarjetaSD.h"
+#include "GCodes.h"
 #include "Pines.h"
+
+GCodes gcodes;
 
 void TarjetaSD::iniciar() {
     Serial.println("Iniciando SD...");
     //SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-    bool ok = SD.begin(SD_CS);
+    bool ok = SD.begin(SD_CS, SPI, 4000000);
     if (!ok) {
         Serial.println("ERROR iniciando SD");
         return;
@@ -35,34 +38,22 @@ void TarjetaSD::cerrar() {
     if (_readFile) _readFile.close();
 }
 
-bool TarjetaSD::leerLinea(File &file, uint32_t linea, char *out, size_t outSize) {
-    file.seek(0);
+bool TarjetaSD::leerSiguienteLinea(char *out, size_t outSize) {
+    if (out == nullptr || outSize == 0) return false;
+    out[0] = '\0';
 
-    uint32_t currentLine = 0;
+    if (!_readFile.available()) return false;   // no more data
+
     size_t i = 0;
-    bool inTarget = false;
-
-    while (file.available()) {
-        char c = file.read();
-        if (c == '\r') continue;
-        if (c == '\n') {
-            if (inTarget) {
-                out[i] = '\0';
-                return true;
-            }
-            currentLine++;
-            continue;
-        }
-        if (currentLine == linea) {
-            inTarget = true;
-            if (i < outSize - 1) out[i++] = c;
-        }
+    while (_readFile.available()) {
+        int c = _readFile.read();
+        if (c < 0) break;                  // read error or EOF
+        if (c == '\r') continue;           // ignore CR in CRLF files
+        if (c == '\n') break;              // end of line
+        if (i < outSize - 1) out[i++] = (char)c;
     }
-    if (inTarget) {
-        out[i] = '\0';
-        return true;
-    }
-    return false;
+    out[i] = '\0';
+    return true;
 }
 
 bool TarjetaSD::esGcode(const char* nombre) {
@@ -77,14 +68,18 @@ void TarjetaSD::dryRun(const char* direccion) {
     if (!abrir(direccion)) {
         return;
     }
-    bool fin = false;
-    Serial.println("iniciando dry run");
-    for (int16_t i = 0; !fin; i++) {
-        char* salida;
-        fin = !leerLinea(_readFile, i, salida, 128);
-        Serial.println(salida);
-    }
-    Serial.println("finalizado");
 
+    Serial.println("iniciando dry run");
+
+    char linea[128];
+    uint32_t numero = 0;
+
+    while (leerSiguienteLinea(linea, sizeof(linea)) && numero < 100) {
+        Serial.print(numero++);
+        Serial.print(": ");
+        Serial.println(linea);
+    }
+
+    Serial.println("finalizado");
     cerrar();
 }
