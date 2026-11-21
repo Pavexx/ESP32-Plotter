@@ -6,7 +6,7 @@ int GCodes::obtenerComando(char* line) {
     if (parser.HasWord('G')) {
         int g = (int)parser.GetWordValue('G');
 
-        if (g == 0 || g == 1) return CMD_G0_G1;
+        if (g == 0 || g == 1 || g == 306) return CMD_G0_G1;
         if (g == 28) return CMD_G28;
     }
 
