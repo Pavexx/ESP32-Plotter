@@ -16,6 +16,7 @@ public:
     void dibujarPrueba();
     FastAccelStepper *stepperL;
     FastAccelStepper *stepperR;
+    int32_t pasosCero[2] = {0};
 private:
     uint16_t i = 0;
 };

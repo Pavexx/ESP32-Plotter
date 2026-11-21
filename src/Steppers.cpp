@@ -45,44 +45,36 @@ void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
 }
 
 void Steppers::cero() {
-    int32_t origen[2] = {0, 0};
-    planner.setCurrentPosition(origen);
+    pasosCero[0] = stepperL->getPositionAfterCommandsCompleted();
+    pasosCero[1] = stepperR->getPositionAfterCommandsCompleted();
+    planner.setCurrentPosition(pasosCero);
+    Serial.println("cero = l:"+String(pasosCero[0])+" r:"+String(pasosCero[1]));
 }
 
 //https://github.com/gin66/FastAccelStepper/blob/master/examples/NaxesAFAP/NaxesAFAP.ino
-bool Steppers::sumarPlaner(int32_t* objetivo, uint16_t& i, uint16_t total) {
-    if (i < total) {
+bool Steppers::sumarPlaner(int32_t* objetivo, uint16_t& in, uint16_t total) {
+    if (in < total) {
         if (planner.addWaypoint(objetivo)) {
-            i++;    //si el planner acepta nuevo punto pasa al siguiente
-            if (i >= total) {
+            Serial.println("yendo a l:"+String(objetivo[0])+" r:"+String(objetivo[1])+" | paso "+String(in));
+            in++;    //si el planner acepta nuevo punto pasa al siguiente
+            if (in >= total) {
             planner.endPath();
             }
         }
     }
     planner.pump();
-    return (!planner.isBusy() && i >= total);   //true si el planner terminó
+    return (!planner.isBusy() && in >= total);   //true si el planner terminó
 }
 
 void Steppers::dibujarPrueba() {
-    int32_t xy[2] = {0};
+    int32_t xy[2] = {0, 0};
     int32_t lr[2] = {0};
-    switch (i) {
-    case 1:
-        xy[0] = 10;
-        break;
-    case 2:
-        xy[1] = 10;
-        xy[0] = 10;
-        break;
-    case 3:
-        xy[1] = 10;
-        break;
-    }
-    XYaPasos(xy[0], xy[1], lr[0], lr[2]);
-    bool ok = sumarPlaner(lr, i, 4);
-    planner.pump();
-    Serial.println("yendo a x:"+String(xy[0])+" y:"+String(xy[1])+" | paso "+String(i));
-    if (ok) {
-        i = (i + 1) % 4;
+    XYaPasos(xy[0], xy[1], lr[0], lr[1]);
+
+    while (!sumarPlaner(lr, i, 6)){
+            xy[0] = (i==1||i==2) ? 100 : -100;
+            xy[1] = (i==2||i==3) ? 200 : 0;
+            if (i == 5) xy[0] = 0;
+            XYaPasos(xy[0], xy[1], lr[0], lr[1]);
     }
 }
