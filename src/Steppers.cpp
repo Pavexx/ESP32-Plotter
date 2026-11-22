@@ -66,14 +66,32 @@ bool Steppers::sumarPlaner(int32_t* objetivo, uint16_t& in, uint16_t total) {
     return (!planner.isBusy() && in >= total);   //true si el planner terminó
 }
 
+bool Steppers::sumarPlaner(int32_t* objetivo) {
+    return (planner.addWaypoint(objetivo));
+}
+
+void Steppers::pumpear() {
+    planner.pump();
+}
+
+void Steppers::terminarTrazo() {
+    if (!planner.isBusy()) return;
+
+    planner.endPath();
+    while (planner.isBusy()) {
+        planner.pump();
+    }  
+}
+
+
 void Steppers::dibujarPrueba() {
     int32_t xy[2] = {0, 0};
     int32_t lr[2] = {0};
     XYaPasos(xy[0], xy[1], lr[0], lr[1]);
-
+    uint16_t i = 0;
     while (!sumarPlaner(lr, i, 6)){
-            xy[0] = (i==1||i==2) ? 100 : -100;
-            xy[1] = (i==2||i==3) ? 200 : 0;
+            xy[0] = (i==1||i==2) ? -100 : 100;
+            xy[1] = (i==1||i==3) ? 200 : 0;
             if (i == 5) xy[0] = 0;
             XYaPasos(xy[0], xy[1], lr[0], lr[1]);
     }

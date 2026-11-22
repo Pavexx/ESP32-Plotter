@@ -13,10 +13,12 @@ public:
     void controlManual(FastAccelStepper *stepper, int16_t valorJoystick);
     void cero();
     bool sumarPlaner(int32_t* objetivo, uint16_t& i, uint16_t total);
+    bool sumarPlaner(int32_t* objetivo);
+    void pumpear();
+    void terminarTrazo();
     void dibujarPrueba();
     FastAccelStepper *stepperL;
     FastAccelStepper *stepperR;
     int32_t pasosCero[2] = {0};
 private:
-    uint16_t i = 0;
 };
