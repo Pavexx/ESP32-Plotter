@@ -30,7 +30,7 @@ void App::iniciar() {
     //calibrar();
     //sd.listarGcodes(Serial);
     //sd.dryRun("/squiggleCam.gcode");
-    steppers.dibujarPrueba();
+    dibujarGcode("/Plotter.gcode");
 }
 
 void App::ciclo() {
@@ -52,34 +52,77 @@ void App::calibrar() {
     Serial.println("calibracion terminada, activando planner");
 }
 
+void App::dibujarGcode(const char* direccion) {
+    if (!sd.abrir(direccion)) {
+        return;
+    }
+    Serial.print("Empezando a dibujar: ");
+    Serial.println(direccion);
+
+    char linea[128];
+    int i = 0;
+    while (sd.leerSiguienteLinea(linea, sizeof(linea))) {
+        Serial.print(i++);
+        Serial.print(": ");
+        Serial.println(linea);
+        ejecutarComando(linea);
+
+    }
+    
+}
+
 void App::ejecutarComando(char* linea) {
-    int32_t h[2] = {0}; 
-    uint16_t i = 0;
-    switch (gcode.obtenerComando(linea)) {
+    float xy[2] = {0};
+    int32_t lr[2] = {0};
+    bool ok = false;
+
+    uint8_t cmd = gcode.obtenerComando(linea);
+
+    if (cmd>2) {    //si no es un comando de movimiento espera a que termine
+        steppers.terminarTrazo();
+    }
+    
+    switch (cmd) {
         case CMD_G0_G1:
-        /* code */
+            gcode.obtenerXY(linea, xy[0], xy[1]);
+            XYaPasos(xy[0], xy[1], lr[0], lr[1]);
+
+            Serial.print("Yendo a X:");
+            Serial.print(xy[0]);
+            Serial.print(" | Y:");
+            Serial.println(xy[1]);
+
+            while (ok) {
+                ok = steppers.sumarPlaner(lr);
+                steppers.pumpear();
+            }
         break;
 
         case CMD_G28:
-        Serial.println("Yendo a home");
-        steppers.sumarPlaner(h, i, 1);
+            Serial.println("Yendo a home");
+            while (ok) {
+                ok = steppers.sumarPlaner(lr);
+                steppers.pumpear();
+            }
         break;
 
         case CMD_M0:
-        /* code */
+            Serial.println("Esperando a presionar B1");
+            jstk.boton1Presionado();
+            while (!jstk.boton1Presionado()) {
+                Serial.print(".");
+                sleep(1);
+            }
         break;
 
         case CMD_Subir:
-        Serial.println("Subiendo Lapiz");
-        servo.subirLapiz();
+            Serial.println("Subiendo Lapiz");
+            servo.subirLapiz();
         break;
 
         case CMD_Bajar:
-        Serial.println("Bajando Lapiz");
-        servo.bajarLapiz();
-        break;
-    
-        default:
+            Serial.println("Bajando Lapiz");
+            servo.bajarLapiz();
         break;
     }
 }
