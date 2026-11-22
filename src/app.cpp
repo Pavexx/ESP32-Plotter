@@ -75,6 +75,7 @@ void App::ejecutarComando(char* linea) {
     float xy[2] = {0};
     int32_t lr[2] = {0};
     bool ok = false;
+    int16_t segmentos;
 
     uint8_t cmd = gcode.obtenerComando(linea);
 
@@ -85,15 +86,21 @@ void App::ejecutarComando(char* linea) {
     switch (cmd) {
         case CMD_G0_G1:
             gcode.obtenerXY(linea, xy[0], xy[1]);
-            XYaPasos(xy[0], xy[1], lr[0], lr[1]);
 
             Serial.print("Yendo a X:");
             Serial.print(xy[0]);
             Serial.print(" | Y:");
             Serial.println(xy[1]);
 
-            while (ok) {
-                ok = steppers.sumarPlaner(lr);
+            segmentos = CantSegmentos(xy[0], xy[1]);
+
+            for (int a = 1; a <= segmentos; a++) {
+
+                PasosIntermedio(a, lr[0], lr[1]);
+                while (ok) {
+                    ok = steppers.sumarPlaner(lr);
+                    steppers.pumpear();
+                }
                 steppers.pumpear();
             }
         break;
