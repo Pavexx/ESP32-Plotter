@@ -2,8 +2,8 @@
 
 #include <Arduino.h>
 
-constexpr int VelocidadMaximaPasoPSeg = 2000;
-constexpr int AceleracionMaxima = 2000;
+constexpr int VelocidadMaximaPasoPSeg = 1500;
+constexpr int AceleracionMaxima = 3000;
 
 constexpr float Distancia_Motores = 700.0f;
 constexpr float Radio_Polea = 9.55f;
@@ -25,12 +25,11 @@ constexpr float Radio_Polea_sq = Radio_Polea * Radio_Polea;
 const float Izq0 = sqrtf(Xinicio*Xinicio+Yinicio*Yinicio);
 const float Der0 = sqrtf((Xinicio-Distancia_Motores)*(Xinicio-Distancia_Motores)+Yinicio*Yinicio);
 
-// G-code coordinate transform:
-// canvas = gcode * scale + offset
-constexpr float GCODE_SCALE_X = 1.0f;
-constexpr float GCODE_SCALE_Y = 1.0f;
-constexpr float GCODE_OFFSET_X_MM = 0.0f;
-constexpr float GCODE_OFFSET_Y_MM = 0.0f;
+// Escala y desplazamiento usado para los gcodes
+constexpr float GCODE_EscalaX = 1.0f;
+constexpr float GCODE_EscalaY = 1.0f;
+constexpr float GCODE_DesplazamientoX = 0.0f;
+constexpr float GCODE_DesplazamientoY = 0.0f;
 
-// PLACEHOLDER: maximum length of each straight XY planner segment.
-constexpr float MAX_SEGMENT_LENGTH_MM = 2.0f;
+// Largo maximo de segmentos para el planner
+constexpr float SegmentoMaximo = 2.0f;
