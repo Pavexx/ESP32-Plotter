@@ -59,6 +59,9 @@ void PasosIntermedio(int16_t i, int32_t& PasosIzq, int32_t& PasosDer) {
 
     float Xintermedia = X0 + incremento * dx;
     float Yintermedia = Y0 + incremento * dy;
-
+	Serial.print("- paso intermedio a X:");
+    Serial.print(Xintermedia);
+    Serial.print(" | Y:");
+    Serial.println(Yintermedia);
 	XYaPasos(Xintermedia, Yintermedia, PasosIzq, PasosDer);
 }

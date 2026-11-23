@@ -47,7 +47,7 @@ void Steppers::controlManual(FastAccelStepper *stepper, int16_t valorJoystick) {
 void Steppers::cero() {
     pasosCero[0] = stepperL->getPositionAfterCommandsCompleted();
     pasosCero[1] = stepperR->getPositionAfterCommandsCompleted();
-    planner.setCurrentPosition(pasosCero);
+    planner.syncFromSteppers();
     Serial.println("cero = l:"+String(pasosCero[0])+" r:"+String(pasosCero[1]));
 }
 
@@ -75,12 +75,18 @@ void Steppers::pumpear() {
 }
 
 void Steppers::terminarTrazo() {
-    if (!planner.isBusy()) return;
-
+    Serial.print("banca que termine");
+    uint32_t start = millis();
+    planner.pump();
     planner.endPath();
-    while (planner.isBusy()) {
+    while (planner.isBusy() && millis() - start < 2000) {
+        planner.endPath();
         planner.pump();
-    }  
+    }
+
+    if (planner.isBusy()) Serial.println("no se pudo terminar el trazo");
+    else Serial.println(" ... ahora si");
+    
 }
 
 

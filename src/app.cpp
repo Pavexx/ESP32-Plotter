@@ -29,7 +29,7 @@ void App::iniciar() {
     steppers.cero();
     //calibrar();
     //sd.listarGcodes(Serial);
-    //sd.dryRun("/squiggleCam.gcode");
+    sd.dryRun("/Plotter.gcode");
     dibujarGcode("/Plotter.gcode");
 }
 
@@ -66,20 +66,21 @@ void App::dibujarGcode(const char* direccion) {
         Serial.print(": ");
         Serial.println(linea);
         ejecutarComando(linea);
-
     }
+    steppers.terminarTrazo();
+    Serial.println("finalizado");
+    sd.cerrar();
     
 }
 
 void App::ejecutarComando(char* linea) {
     float xy[2] = {0};
     int32_t lr[2] = {0};
-    bool ok = false;
     int16_t segmentos;
 
     uint8_t cmd = gcode.obtenerComando(linea);
 
-    if (cmd>2) {    //si no es un comando de movimiento espera a que termine
+    if (cmd>1) {    //si no es un comando de movimiento espera a que termine
         steppers.terminarTrazo();
     }
     
@@ -97,24 +98,24 @@ void App::ejecutarComando(char* linea) {
             for (int a = 1; a <= segmentos; a++) {
 
                 PasosIntermedio(a, lr[0], lr[1]);
-                while (ok) {
-                    ok = steppers.sumarPlaner(lr);
+                while (!steppers.sumarPlaner(lr)) {
                     steppers.pumpear();
                 }
-                steppers.pumpear();
             }
+            Serial.println("- terminó");
         break;
 
         case CMD_G28:
             Serial.println("Yendo a home");
-            while (ok) {
-                ok = steppers.sumarPlaner(lr);
+            servo.subirLapiz();
+            while (!steppers.sumarPlaner(lr)) {
                 steppers.pumpear();
             }
         break;
 
         case CMD_M0:
             Serial.println("Esperando a presionar B1");
+            servo.subirLapiz();
             jstk.boton1Presionado();
             while (!jstk.boton1Presionado()) {
                 Serial.print(".");
