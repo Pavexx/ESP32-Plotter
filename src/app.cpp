@@ -18,6 +18,7 @@ GCodes gcode;
 
 void App::iniciar() {
     Serial.begin(115200);
+    pinMode(2, OUTPUT); //iniciar led integrado, comentar para desactivar
     web.iniciar();
     tft.iniciar();
     jstk.iniciar();
@@ -29,11 +30,17 @@ void App::iniciar() {
     steppers.cero();
     //calibrar();
     //sd.listarGcodes(Serial);
-    sd.dryRun("/Plotter.gcode");
-    dibujarGcode("/Plotter.gcode");
+    // sd.dryRun("/Plotter.gcode");
+    // dibujarGcode("/Plotter.gcode");
 }
 
 void App::ciclo() {
+    servo.bajarLapiz();
+    digitalWrite(2, LOW);
+    sleep(1);
+    servo.subirLapiz();
+    digitalWrite(2, HIGH);
+    sleep(2);
 
 }
 
